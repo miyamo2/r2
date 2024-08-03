@@ -1,0 +1,70 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    paths: ["CHANGELOG.md"]
+
+permissions: write-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: "1.22.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: env.GO_VERSION
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Setup Go Env
+        if: contains(env.GO_VERSION, '1.22')
+        run: |
+          go env -w GOEXPERIMENT=rangefunc
+
+      - name: Unit Test
+        run: |
+          TARGET=$(go list ./... | grep -v "mock")
+          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
+
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Extract Version
+        id: versioning
+        run: |
+          VERSION="v$(sed -n 's/##\s\([0-9.]*\)\s.*/\1/p' CHANGELOG.md | head -1)"
+          echo ::set-output name=version::$VERSION
+
+      - name: Extract changes from prev version
+        run: |
+          git fetch --prune --unshallow
+          PRETAG=$(git tag --sort -v:refname | head -1)
+          CURRENTTAG=${{ steps.versioning.outputs.version }}
+          echo "## What's Changed in ${CURRENTTAG}" > diff-changelog.txt
+          if [ -z "$PRETAG" ]
+          then
+            cat CHANGELOG.md | grep -E '^\+' | grep -v '+++' | sed -e 's/^\+//g' | sed -e 's/##\s[0-9.]*\s.*//g' | sed -e '/^$/d' >> diff-changelog.txt
+          else
+            git diff $PRETAG..${{ github.sha }} -- CHANGELOG.md | grep -E '^\+' | grep -v '+++' | sed -e 's/^\+//g' | sed -e 's/##\s[0-9.]*\s.*//g' | sed -e '/^$/d' >> diff-changelog.txt
+            echo "" >> diff-changelog.txt
+            echo "**Full Changelog**: https://github.com/miyamo2/r3/compare/${PRETAG}...${CURRENTTAG}" >> diff-changelog.txt
+          fi
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.versioning.outputs.version }}
+          generate_release_notes: false
+          body_path: diff-changelog.txt

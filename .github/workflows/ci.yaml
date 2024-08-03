@@ -1,0 +1,74 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "refactor/**"
+      - "fix/**"
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+  workflow_call:
+
+permissions: write-all
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goversion: ["1.22.0"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goversion }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Setup GOEXPERIMENT rangefunc
+        if: contains(matrix.goversion, '1.22')
+        run: |
+          go env -w GOEXPERIMENT=rangefunc
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Setup mockgen
+        run: |
+          go install go.uber.org/mock/mockgen@latest
+
+      - name: Go Generate
+        run: |
+          go mod tidy
+          go generate ./...
+          git diff --exit-code
+
+      - name: golangci-lint with reviedog
+        uses: reviewdog/action-golangci-lint@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          go_version: ${{ matrix.goversion }}
+          reporter: github-pr-review
+          level: warning
+          golangci_lint_flags: "--config=.golangci.yaml"
+
+      - name: Unit Test
+        run: |
+          TARGET=$(go list ./... | grep -v "mock")
+          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
+
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: false
+          verbose: true
