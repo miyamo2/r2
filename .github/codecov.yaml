@@ -4,8 +4,8 @@ coverage:
       default:
         target: 70%
     project:
-      default:
-        target: 70%
+      unit:
+        flags: [unit]
 
 comment:
   layout: "diff, flags, files"
