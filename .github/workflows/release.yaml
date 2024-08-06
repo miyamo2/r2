@@ -59,7 +59,7 @@ jobs:
           else
             git diff $PRETAG..${{ github.sha }} -- CHANGELOG.md | grep -E '^\+' | grep -v '+++' | sed -e 's/^\+//g' | sed -e 's/##\s[0-9.]*\s.*//g' | sed -e '/^$/d' >> diff-changelog.txt
             echo "" >> diff-changelog.txt
-            echo "**Full Changelog**: https://github.com/miyamo2/r3/compare/${PRETAG}...${CURRENTTAG}" >> diff-changelog.txt
+            echo "**Full Changelog**: https://github.com/miyamo2/r2/compare/${PRETAG}...${CURRENTTAG}" >> diff-changelog.txt
           fi
 
       - name: Release
