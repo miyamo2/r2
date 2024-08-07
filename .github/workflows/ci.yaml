@@ -19,8 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goversion: ["1.22.0"]
-
+        goversion:
+          - "1.22.0"
+          - 'stable'
     steps:
       - uses: actions/checkout@v4
 
@@ -31,25 +32,26 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
 
-      - name: Setup GOEXPERIMENT rangefunc
-        if: contains(matrix.goversion, '1.22')
+      - name: Setup xc
+        uses: joerdav/setup-xc@v1
+
+      - name: Setup deps
         run: |
-          go env -w GOEXPERIMENT=rangefunc
+          xc setup:deps
+
+      - name: Setup Go env
+        run: |
+          xc setup:goenv
+
+      - name: Go Generate
+        run: |
+          xc setup:mocks
+          git diff --exit-code
 
       - name: Setup reviewdog
         uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
-
-      - name: Setup mockgen
-        run: |
-          go install go.uber.org/mock/mockgen@latest
-
-      - name: Go Generate
-        run: |
-          go mod tidy
-          go generate ./...
-          git diff --exit-code
 
       - name: golangci-lint with reviedog
         uses: reviewdog/action-golangci-lint@v2
@@ -62,13 +64,13 @@ jobs:
 
       - name: Unit Test
         run: |
-          TARGET=$(go list ./... | grep -v "mock")
-          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
+          xc test:unit
 
       - name: Upload unit test coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.out
+          files: ./u6t/coverage.out
           fail_ci_if_error: false
           verbose: true
+          flags: unit
