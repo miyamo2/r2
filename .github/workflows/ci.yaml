@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: go.sum
 
       - name: Setup xc
-        uses: joerdav/setup-xc@v1
+        uses: joerdav/setup-xc@v0.0.3
 
       - name: Setup deps
         run: |
