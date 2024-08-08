@@ -21,7 +21,7 @@ jobs:
       matrix:
         goversion:
           - "1.22.0"
-          - 'stable'
+          - "stable"
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +62,7 @@ jobs:
 
       - name: Upload unit test coverage to Codecov
         uses: codecov/codecov-action@v4
+        if: ${{ matrix.goversion == 'stable' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./u6t/coverage.out
