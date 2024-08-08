@@ -48,11 +48,6 @@ jobs:
           xc setup:mocks
           git diff --exit-code
 
-      - name: Setup reviewdog
-        uses: reviewdog/action-setup@v1
-        with:
-          reviewdog_version: latest
-
       - name: golangci-lint with reviedog
         uses: reviewdog/action-golangci-lint@v2
         with:
