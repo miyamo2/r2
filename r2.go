@@ -143,14 +143,14 @@ func WithHttpClient(client internal.HttpClient) internal.Option {
 	}
 }
 
-// WithContentType sets custom headers for the request.
+// WithContentType sets the content type for the request header.
 func WithContentType(contentType string) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetContentType(contentType)
 	}
 }
 
-// WithHeader sets custom headers for the request.
+// WithHeader sets custom http headers for the request.
 func WithHeader(header http.Header) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetHeader(header)
@@ -175,13 +175,14 @@ func WithInterval(interval time.Duration) internal.Option {
 }
 
 // WithPeriod sets the timeout period for the per request.
+// If less than or equal to 0 is specified, the timeout period does not apply.
 func WithPeriod(period time.Duration) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetPeriod(period)
 	}
 }
 
-// WithTerminationCondition sets the termination condition that references a response.
+// WithTerminationCondition sets the termination condition of the iterator that references the response.
 func WithTerminationCondition(terminationCondition func(res *http.Response) bool) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetTerminationCondition(terminationCondition)
