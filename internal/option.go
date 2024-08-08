@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Option is a functional option for r2.
+// Option specifies optional parameters to r2.
 type Option func(*R2Prop)
 
 // R2Prop is the properties of r2.

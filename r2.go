@@ -21,6 +21,9 @@ import (
 	"time"
 )
 
+// Option specifies optional parameters to r2.
+type Option = internal.Option
+
 // ErrTerminatedWithClientErrorResponse is returned when the response status code is 4xx.
 // However, in the case of 429(Too Many Request) it would not be applicable.
 var ErrTerminatedWithClientErrorResponse = errors.New("4xx response")
