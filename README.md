@@ -93,11 +93,11 @@ func main() {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
-    r2.WithPeriod(time.Second),
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
 }
 for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -106,11 +106,11 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
-    r2.WithPeriod(time.Second),
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
 }
 for res, err := range r2.Head(ctx, "https://127.0.0.1", opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -119,13 +119,13 @@ for res, err := range r2.Head(ctx, "https://127.0.0.1", opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
+	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
 for res, err := range r2.Post(ctx, "https://127.0.0.1", body, opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -134,13 +134,13 @@ for res, err := range r2.Post(ctx, "https://127.0.0.1", body, opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
-    r2.WithPeriod(time.Second),
-    r2.WithContentType(r2.ContentTypeApplicationJson),
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
+	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
 for res, err := range r2.Put(ctx, "https://127.0.0.1", body, opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -149,13 +149,13 @@ for res, err := range r2.Put(ctx, "https://127.0.0.1", body, opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
-    r2.WithPeriod(time.Second),
-    r2.WithContentType(r2.ContentTypeApplicationJson),
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
+	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
 for res, err := range r2.Patch(ctx, "https://127.0.0.1", body, opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -164,13 +164,13 @@ for res, err := range r2.Patch(ctx, "https://127.0.0.1", body, opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
-    r2.WithPeriod(time.Second),
-    r2.WithContentType(r2.ContentTypeApplicationJson),
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
+	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
 for res, err := range r2.Delete(ctx, "https://127.0.0.1", body, opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -179,13 +179,13 @@ for res, err := range r2.Delete(ctx, "https://127.0.0.1", body, opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithMaxRequestTimes(3),
+	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 form := url.Values{"foo": []string{"bar"}}
 for res, err := range r2.Post(ctx, "https://127.0.0.1", form, opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -246,7 +246,7 @@ opts := []r2.Option{
 	r2.WithInterval(time.Second),
 }
 for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -255,13 +255,13 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 ```go
 ctx := context.Background()
 opts := []r2.Option{
-    r2.WithTerminationCondition(func(res *http.Response) bool {
-        myHeader := res.Header.Get("X-My-Header")
-        return len(myHeader) > 0
-    }),
+	r2.WithTerminationCondition(func(res *http.Response) bool {
+		myHeader := res.Header.Get("X-My-Header")
+		return len(myHeader) > 0
+	}),
 }
 for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
-    // do something
+	// do something
 }
 ```
 
@@ -271,10 +271,10 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 ctx := context.Background()
 var myHttpClient *http.Client = getMyHttpClient()
 opts := []r2.Option{
-    r2.WithHttpClient(myHttpClient),
+	r2.WithHttpClient(myHttpClient),
 }
 for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
-    // do something
+	// do something
 }
 ```
 
