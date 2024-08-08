@@ -163,6 +163,8 @@ func WithMaxRequestTimes(maxRequestTimes int) internal.Option {
 }
 
 // WithInterval sets the interval between next request.
+// By default, the interval is calculated by the exponential backoff and jitter.
+// If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header.
 func WithInterval(interval time.Duration) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetInterval(interval)
@@ -176,7 +178,7 @@ func WithPeriod(period time.Duration) internal.Option {
 	}
 }
 
-// WithTerminationCondition sets the termination condition for the polling.
+// WithTerminationCondition sets the termination condition that references a response.
 func WithTerminationCondition(terminationCondition func(res *http.Response) bool) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetTerminationCondition(terminationCondition)
