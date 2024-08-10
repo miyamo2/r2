@@ -423,6 +423,10 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 }
 ```
 
+### Advanced Usage
+
+[Read more advanced usages](https://github.com/miyamo2/r2/blob/main/.doc/ADVANCED_USAGE.md)
+
 ## For Contributors
 
 Feel free to open a PR or an Issue.
