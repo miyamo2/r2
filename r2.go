@@ -64,7 +64,7 @@ const (
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -76,7 +76,7 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -88,7 +88,7 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -100,7 +100,7 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -113,7 +113,7 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -125,7 +125,7 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
@@ -137,7 +137,7 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 //   - request succeeds and termination condition is not specified
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of retries specified in [WithMaxRequestTimes] is reached
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
 //   - exceeds the deadline for the [context.Context] passed in the argument
 //
 // And during which time it continues to return [http.Response] and error.
