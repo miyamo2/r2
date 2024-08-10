@@ -29,6 +29,9 @@ type Option = internal.Option
 // HttpClient specifies the interface for the custom HTTP client.
 type HttpClient = internal.HttpClient
 
+// Aspect adding behavior to the pre-request/post-request.
+type Aspect = internal.Aspect
+
 // ErrTerminatedWithClientErrorResponse is returned when the response status code is 4xx.
 // However, in the case of 429(Too Many Request) it would not be applicable.
 var ErrTerminatedWithClientErrorResponse = errors.New("4xx response")
@@ -201,6 +204,13 @@ func WithTerminationCondition(terminationCondition func(res *http.Response) bool
 	}
 }
 
+// WithAspect sets the behavior to the pre-request/post-request.
+func WithAspect(aspect Aspect) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetAspect(aspect)
+	}
+}
+
 // responseSeq returns a sequence of [http.Response] and error.
 func responseSeq(ctx context.Context, url, method string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
 	prop := internal.NewR2Prop(options...)
@@ -225,7 +235,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 	return func(yield func(*http.Response, error) bool) {
 		i := 0
 		for {
-			res, err := requestWithTimeout(ctx, client, *req, prop.Period())
+			res, err := requestWithTimeout(ctx, client, *req, prop.Period(), prop.Aspect())
 			if !yield(res, err) {
 				return
 			}
@@ -294,7 +304,7 @@ type requestResult struct {
 }
 
 // requestWithTimeout sends a request with a timeout.
-func requestWithTimeout(ctx context.Context, client internal.HttpClient, req http.Request, period time.Duration) (*http.Response, error) {
+func requestWithTimeout(ctx context.Context, client internal.HttpClient, req http.Request, period time.Duration, aspect Aspect) (*http.Response, error) {
 	cancel := func() {
 		// no-op
 	}
@@ -306,7 +316,7 @@ func requestWithTimeout(ctx context.Context, client internal.HttpClient, req htt
 	resultCh := make(chan requestResult, 1)
 	go func() {
 		defer close(resultCh)
-		res, err := client.Do(req.WithContext(ctx))
+		res, err := aspect(req.WithContext(ctx), client.Do)
 		resultCh <- requestResult{res, err}
 	}()
 

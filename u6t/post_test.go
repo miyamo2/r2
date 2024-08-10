@@ -842,6 +842,62 @@ func TestPost(t *testing.T) {
 				},
 			},
 		},
+		"with-aspect": {
+			param: param{
+				ctx: context.Background,
+				url: "http://example.com",
+				options: []internal.Option{
+					internal.WithNewRequest(stubNewRequest),
+					r2.WithMaxRequestTimes(2),
+					r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+						req.Header.Set("x-something", "value")
+						res, err := do(req)
+						copiedRes := &http.Response{
+							StatusCode: res.StatusCode + 1,
+						}
+						return copiedRes, err
+					}),
+				},
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPost,
+							Header: http.Header{"X-Something": []string{"value"}},
+						},
+					},
+					result: clientResult{
+						res: &ResponseInternalServerError,
+					},
+				},
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPost,
+							Header: http.Header{"X-Something": []string{"value"}},
+						},
+					},
+					result: clientResult{
+						res: &ResponseOK,
+					},
+				},
+			},
+			wants: []want{
+				{
+					res: &http.Response{
+						StatusCode: http.StatusInternalServerError + 1,
+					},
+				},
+				{
+					res: &http.Response{
+						StatusCode: http.StatusOK + 1,
+					},
+				},
+			},
+		},
 	}
 
 	for name, tt := range tests {

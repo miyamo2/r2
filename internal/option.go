@@ -8,6 +8,9 @@ import (
 // Option specifies optional parameters to r2.
 type Option func(*R2Prop)
 
+// Aspect adding behavior to the pre-request/post-request.
+type Aspect func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error)
+
 // R2Prop is the properties of r2.
 type R2Prop struct {
 	client               HttpClient
@@ -18,6 +21,7 @@ type R2Prop struct {
 	period               time.Duration
 	terminationCondition func(res *http.Response) bool
 	newRequest           NewRequest
+	aspect               Aspect
 }
 
 // SetClient sets the client.
@@ -57,6 +61,11 @@ func (p *R2Prop) SetTerminationCondition(terminationCondition func(res *http.Res
 // SetNewRequestFunc sets the new request function.
 func (p *R2Prop) SetNewRequestFunc(newRequest NewRequest) {
 	p.newRequest = newRequest
+}
+
+// SetAspect sets the aspect.
+func (p *R2Prop) SetAspect(aspect Aspect) {
+	p.aspect = aspect
 }
 
 // Client returns the client. If the client is nil, it returns http.DefaultClient.
@@ -112,6 +121,16 @@ func (p *R2Prop) ContentType() string {
 // TerminationCondition returns the termination condition.
 func (p *R2Prop) TerminationCondition() func(res *http.Response) bool {
 	return p.terminationCondition
+}
+
+// Aspect returns the behavior to the pre-request/post-request.
+func (p *R2Prop) Aspect() Aspect {
+	if p.aspect == nil {
+		return func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+			return do(req)
+		}
+	}
+	return p.aspect
 }
 
 // NewR2Prop returns a new R2Prop.

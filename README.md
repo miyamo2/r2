@@ -307,7 +307,7 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 | [`WithHttpClient`](https://github.com/miyamo2/r2?tab=readme-ov-file#withhttpclient)                     | The client to use for requests.                                                                                                                                                                                           | `http.DefaultClient` |
 | [`WithHeader`](https://github.com/miyamo2/r2?tab=readme-ov-file#withheader)                             | The custom http headers for the request.                                                                                                                                                                                  | `http.Header`(blank) |
 | [`WithContentType`](https://github.com/miyamo2/r2?tab=readme-ov-file#withcontenttype)                   | The 'Content-Type' for the request.                                                                                                                                                                                       | `''`                 |
-
+| [`WithAspect`](https://github.com/miyamo2/r2?tab=readme-ov-file#withaspect)                             | The behavior to the pre-request/post-request.                                                                                                                                                                             | -                    |
 
 #### WithMaxRequestTimes
 
@@ -401,6 +401,23 @@ opts := []r2.Option{
 }
 for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
+}
+```
+
+#### WithAspect
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
+opts := []r2.Option{
+    r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+        res, err := do(req)
+        res.StatusCode = res.StatusCode + 1
+        return res, err
+    }),
+}
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+    // do something
 }
 ```
 
