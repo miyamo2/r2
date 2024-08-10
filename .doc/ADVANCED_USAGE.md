@@ -21,10 +21,9 @@ var nr *newrelic.Application // omit the acquisition of *newrelic.Application.
 
 func main() {
 	ctx := context.Background()
-	tx := newrelic.FromContext(ctx)
+	txn := newrelic.FromContext(ctx)
 	opts := []r2.Option{
 		r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
-			txn := nr.StartTransaction("request")
 			seg := newrelic.StartExternalSegment(txn, req)
 			defer seg.End()
 			response, err := do(req)
