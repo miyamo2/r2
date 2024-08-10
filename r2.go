@@ -149,7 +149,7 @@ func Delete(ctx context.Context, url string, body io.Reader, options ...internal
 }
 
 // WithHttpClient sets a custom HTTP client for the request.
-func WithHttpClient(client internal.HttpClient) internal.Option {
+func WithHttpClient(client HttpClient) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetClient(client)
 	}
