@@ -98,6 +98,9 @@ func (p *R2Prop) Period() time.Duration {
 
 // NewRequestFunc returns the new request function.
 func (p *R2Prop) NewRequestFunc() NewRequest {
+	if p.newRequest == nil {
+		return http.NewRequest
+	}
 	return p.newRequest
 }
 
