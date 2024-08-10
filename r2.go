@@ -26,6 +26,9 @@ import (
 // Option specifies optional parameters to r2.
 type Option = internal.Option
 
+// HttpClient specifies the interface for the custom HTTP client.
+type HttpClient = internal.HttpClient
+
 // ErrTerminatedWithClientErrorResponse is returned when the response status code is 4xx.
 // However, in the case of 429(Too Many Request) it would not be applicable.
 var ErrTerminatedWithClientErrorResponse = errors.New("4xx response")
