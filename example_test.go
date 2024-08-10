@@ -13,7 +13,8 @@ import (
 )
 
 func Example() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
@@ -22,6 +23,10 @@ func Example() {
 		if err != nil {
 			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
 				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
+				break
+			}
+			if errors.Is(err, context.DeadlineExceeded) {
+				slog.ErrorContext(ctx, "deadline exceeded.", slog.Any("error", err))
 				break
 			}
 			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
@@ -47,7 +52,8 @@ func Example() {
 }
 
 func Example_Head() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
@@ -59,7 +65,8 @@ func Example_Head() {
 }
 
 func Example_Get() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
@@ -71,7 +78,8 @@ func Example_Get() {
 }
 
 func Example_Post() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithMaxRequestTimes(3),
@@ -85,7 +93,8 @@ func Example_Post() {
 }
 
 func Example_Put() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithMaxRequestTimes(3),
@@ -99,7 +108,8 @@ func Example_Put() {
 }
 
 func Example_Patch() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithMaxRequestTimes(3),
@@ -113,7 +123,8 @@ func Example_Patch() {
 }
 
 func Example_Delete() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithMaxRequestTimes(3),
@@ -127,7 +138,8 @@ func Example_Delete() {
 }
 
 func Example_PostForm() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithMaxRequestTimes(3),
@@ -143,7 +155,8 @@ func Example_PostForm() {
 var myHttpClient *http.Client
 
 func Example_WithHttpClient() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithHttpClient(myHttpClient),
 	}
@@ -154,7 +167,8 @@ func Example_WithHttpClient() {
 }
 
 func Example_WithHeader() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithHeader(http.Header{"X-My-Header": []string{"my-value"}}),
 	}
@@ -165,7 +179,8 @@ func Example_WithHeader() {
 }
 
 func Example_WithInterval() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithInterval(time.Second),
 	}
@@ -176,7 +191,8 @@ func Example_WithInterval() {
 }
 
 func Example_WithMaxRequestTimes() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithMaxRequestTimes(3),
 	}
@@ -187,7 +203,8 @@ func Example_WithMaxRequestTimes() {
 }
 
 func Example_WithPeriod() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithPeriod(time.Second),
 	}
@@ -198,7 +215,8 @@ func Example_WithPeriod() {
 }
 
 func Example_WithTerminationCondition() {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 	opts := []r2.Option{
 		r2.WithTerminationCondition(func(res *http.Response) bool {
 			myHeader := res.Header.Get("X-My-Header")
