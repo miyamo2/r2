@@ -35,7 +35,7 @@ opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	if err != nil {
 		if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
 			slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
@@ -184,7 +184,7 @@ opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -198,7 +198,7 @@ opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
 }
-for res, err := range r2.Head(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Head(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -214,7 +214,7 @@ opts := []r2.Option{
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-for res, err := range r2.Post(ctx, "https://127.0.0.1", body, opts...) {
+for res, err := range r2.Post(ctx, "https://example.com", body, opts...) {
 	// do something
 }
 ```
@@ -230,7 +230,7 @@ opts := []r2.Option{
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-for res, err := range r2.Put(ctx, "https://127.0.0.1", body, opts...) {
+for res, err := range r2.Put(ctx, "https://example.com", body, opts...) {
 	// do something
 }
 ```
@@ -246,7 +246,7 @@ opts := []r2.Option{
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-for res, err := range r2.Patch(ctx, "https://127.0.0.1", body, opts...) {
+for res, err := range r2.Patch(ctx, "https://example.com", body, opts...) {
 	// do something
 }
 ```
@@ -262,7 +262,7 @@ opts := []r2.Option{
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-for res, err := range r2.Delete(ctx, "https://127.0.0.1", body, opts...) {
+for res, err := range r2.Delete(ctx, "https://example.com", body, opts...) {
 	// do something
 }
 ```
@@ -278,7 +278,7 @@ opts := []r2.Option{
 	r2.WithContentType(r2.ContentTypeApplicationJson),
 }
 form := url.Values{"foo": []string{"bar"}}
-for res, err := range r2.Post(ctx, "https://127.0.0.1", form, opts...) {
+for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 	// do something
 }
 ```
@@ -316,7 +316,7 @@ defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -329,7 +329,7 @@ defer cancel()
 opts := []r2.Option{
 	r2.WithPeriod(time.Second),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -342,7 +342,7 @@ defer cancel()
 opts := []r2.Option{
 	r2.WithInterval(time.Second),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -358,7 +358,7 @@ opts := []r2.Option{
 		return len(myHeader) > 0
 	}),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -372,7 +372,7 @@ var myHttpClient *http.Client = getMyHttpClient()
 opts := []r2.Option{
 	r2.WithHttpClient(myHttpClient),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -385,7 +385,7 @@ defer cancel()
 opts := []r2.Option{
 	r2.WithHeader(http.Header{"X-My-Header": []string{"my-value"}}),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```
@@ -398,7 +398,7 @@ defer cancel()
 opts := []r2.Option{
 	r2.WithContentType("application/json"),
 }
-for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	// do something
 }
 ```

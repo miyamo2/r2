@@ -19,7 +19,7 @@ func Example() {
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		if err != nil {
 			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
 				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
@@ -58,7 +58,7 @@ func Example_Head() {
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
 	}
-	for res, err := range r2.Head(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Head(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -71,7 +71,7 @@ func Example_Get() {
 		r2.WithMaxRequestTimes(3),
 		r2.WithPeriod(time.Second),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -86,7 +86,7 @@ func Example_Post() {
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-	for res, err := range r2.Post(ctx, "https://127.0.0.1", body, opts...) {
+	for res, err := range r2.Post(ctx, "https://example.com", body, opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -101,7 +101,7 @@ func Example_Put() {
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-	for res, err := range r2.Put(ctx, "https://127.0.0.1", body, opts...) {
+	for res, err := range r2.Put(ctx, "https://example.com", body, opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -116,7 +116,7 @@ func Example_Patch() {
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-	for res, err := range r2.Patch(ctx, "https://127.0.0.1", body, opts...) {
+	for res, err := range r2.Patch(ctx, "https://example.com", body, opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -131,7 +131,7 @@ func Example_Delete() {
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
-	for res, err := range r2.Delete(ctx, "https://127.0.0.1", body, opts...) {
+	for res, err := range r2.Delete(ctx, "https://example.com", body, opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -146,7 +146,7 @@ func Example_PostForm() {
 		r2.WithPeriod(time.Second),
 	}
 	form := url.Values{"foo": []string{"bar"}}
-	for res, err := range r2.PostForm(ctx, "https://127.0.0.1", form, opts...) {
+	for res, err := range r2.PostForm(ctx, "https://example.com", form, opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -160,7 +160,7 @@ func Example_WithHttpClient() {
 	opts := []r2.Option{
 		r2.WithHttpClient(myHttpClient),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -172,7 +172,7 @@ func Example_WithHeader() {
 	opts := []r2.Option{
 		r2.WithHeader(http.Header{"X-My-Header": []string{"my-value"}}),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -184,7 +184,7 @@ func Example_WithInterval() {
 	opts := []r2.Option{
 		r2.WithInterval(time.Second),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -196,7 +196,7 @@ func Example_WithMaxRequestTimes() {
 	opts := []r2.Option{
 		r2.WithMaxRequestTimes(3),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -208,7 +208,7 @@ func Example_WithPeriod() {
 	opts := []r2.Option{
 		r2.WithPeriod(time.Second),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
@@ -223,7 +223,7 @@ func Example_WithTerminationCondition() {
 			return len(myHeader) > 0
 		}),
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
 		_, _ = res, err
 	}
