@@ -283,6 +283,11 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 	}
 }
 
+type requestResult struct {
+	res *http.Response
+	err error
+}
+
 // requestWithTimeout sends a request with a timeout.
 func requestWithTimeout(ctx context.Context, client internal.HttpClient, req http.Request, period time.Duration) (*http.Response, error) {
 	cancel := func() {
@@ -292,7 +297,19 @@ func requestWithTimeout(ctx context.Context, client internal.HttpClient, req htt
 		ctx, cancel = context.WithTimeout(ctx, period)
 	}
 	defer cancel()
-	return client.Do(req.WithContext(ctx))
+
+	resultCh := make(chan requestResult)
+	go func() {
+		res, err := client.Do(req.WithContext(ctx))
+		resultCh <- requestResult{res, err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case result := <-resultCh:
+		return result.res, result.err
+	}
 }
 
 // backOff returns the duration of the backoff.

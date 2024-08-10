@@ -206,9 +206,7 @@ func TestPostForm(t *testing.T) {
 							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
-					result: clientResult{
-						err: context.DeadlineExceeded,
-					},
+					result: clientResult{},
 				},
 				{
 					param: clientParam{
@@ -219,9 +217,7 @@ func TestPostForm(t *testing.T) {
 							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
-					result: clientResult{
-						err: context.DeadlineExceeded,
-					},
+					result: clientResult{},
 				},
 				{
 					param: clientParam{
@@ -232,9 +228,7 @@ func TestPostForm(t *testing.T) {
 							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
-					result: clientResult{
-						err: context.DeadlineExceeded,
-					},
+					result: clientResult{},
 				},
 			},
 			wants: []want{
@@ -860,7 +854,12 @@ func TestPostForm(t *testing.T) {
 			mockHttpClient := NewMockHttpClient(ctrl)
 			calls := make([]any, 0, len(tt.clientParamResultPairs))
 			for _, pr := range tt.clientParamResultPairs {
-				calls = append(calls, mockHttpClient.EXPECT().Do(NewRequestMatcher(pr.param.req)).Return(pr.result.res, pr.result.err))
+				calls = append(calls, mockHttpClient.EXPECT().Do(NewRequestMatcher(pr.param.req)).DoAndReturn(
+					func(req *http.Request) (*http.Response, error) {
+						time.Sleep(time.Second)
+						return pr.result.res, pr.result.err
+					},
+				))
 			}
 			gomock.InOrder(calls...)
 
