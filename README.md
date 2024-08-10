@@ -52,6 +52,7 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	if res.StatusCode != http.StatusOK {
 		io.Copy(io.Discard, res.Body)
 		res.Body.Close()
+		continue
 	}
 
 	buf, err := io.ReadAll(res.Body)
@@ -148,6 +149,7 @@ for {
 		if res.StatusCode != http.StatusOK {
 			io.Copy(io.Discard, res.Body)
 			res.Body.Close()
+			continue
 		}
 
 		buf, err := io.ReadAll(res.Body)

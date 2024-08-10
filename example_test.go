@@ -39,6 +39,7 @@ func Example() {
 		if res.StatusCode != http.StatusOK {
 			io.Copy(io.Discard, res.Body)
 			res.Body.Close()
+			continue
 		}
 
 		buf, err := io.ReadAll(res.Body)
