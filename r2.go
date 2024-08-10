@@ -235,7 +235,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 					}
 					atoi, err := strconv.Atoi(retryAfter)
 					if err != nil {
-						slog.Default().ErrorContext(
+						slog.Default().WarnContext(
 							ctx,
 							"[r2]: server returned an invalid 'retry-after'.",
 							slog.String("url", req.URL.String()),
