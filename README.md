@@ -63,6 +63,106 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 }
 ```
 
+<details>
+    <summary>If without miyamo2/r2</summary>
+
+```go
+type requestResult struct {
+    res *http.Response
+    err error
+}
+
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
+
+doReq := func(ctx context.Context, url string, timeout time.Duration) requestResult {
+	ctx, cancelReq := context.WithTimeout(ctx, timeout)
+	defer cancelReq()
+
+	resultCh := make(chan requestResult, 1)
+	defer close(resultCh)
+	go func() {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			resultCh <- requestResult{
+				res: nil,
+				err: err,
+			}
+		}
+		res, err := http.DefaultClient.Do(req)
+		resultCh <- requestResult{
+			res: res,
+			err: err,
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return requestResult{
+			nil,
+			ctx.Err(),
+		}
+	case result := <-resultCh:
+		return result
+	}
+}
+
+maxRequestTimes := 3
+resultCh := make(chan requestResult)
+terminated := make(chan struct{})
+go func() {
+	for i := 0; i < maxRequestTimes; i++ {
+		select {
+		case <-terminated:
+			close(resultCh)
+			return
+		}
+		result := doReq(ctx, "https://example.com", time.Second)
+		resultCh <- result
+	}
+}()
+
+for {
+	select {
+	case <-ctx.Done():
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			slog.ErrorContext(ctx, "deadline exceeded.", slog.Any("error", ctx.Err()))
+		}
+		break
+	case result := <-resultCh:
+		err := result.err
+		if err != nil {
+			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
+				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
+				break
+			}
+			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
+			continue
+		}
+		res := result.res
+		if res == nil {
+			slog.WarnContext(ctx, "response is nil")
+			continue
+		}
+		if res.StatusCode != http.StatusOK {
+			io.Copy(io.Discard, res.Body)
+			res.Body.Close()
+		}
+
+		buf, err := io.ReadAll(res.Body)
+		res.Body.Close()
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
+			continue
+		}
+		slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
+	}
+}
+
+close(terminated)
+```
+</details>
+
 ### Features
 
 | Feature                                                                 | Description                                                                                                                                                |
