@@ -14,7 +14,7 @@ import (
 
 func TestGet(t *testing.T) {
 	type param struct {
-		ctx     context.Context
+		ctx     func() context.Context
 		url     string
 		options []internal.Option
 	}
@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 	tests := map[string]test{
 		"most-commonly": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -73,7 +73,7 @@ func TestGet(t *testing.T) {
 		},
 		"with-termination-condition": {
 			param: param{
-				ctx: context.Background(),
+				ctx: context.Background,
 				url: "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2), r2.WithTerminationCondition(func(res *http.Response) bool {
 					if xSomething, ok := res.Header["x-something"]; ok {
@@ -125,7 +125,7 @@ func TestGet(t *testing.T) {
 		},
 		"with-header": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
 			},
@@ -151,7 +151,7 @@ func TestGet(t *testing.T) {
 		},
 		"with-content-type": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(3), r2.WithContentType(r2.ContentTypeApplicationJSON)},
 			},
@@ -177,7 +177,7 @@ func TestGet(t *testing.T) {
 		},
 		"with-period": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(3), r2.WithPeriod(1 * time.Nanosecond)},
 			},
@@ -227,7 +227,7 @@ func TestGet(t *testing.T) {
 		},
 		"new-request-returns-error": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestTimes(1)},
 			},
@@ -235,9 +235,9 @@ func TestGet(t *testing.T) {
 		"context-cancel": {
 			param: param{
 				ctx: func() context.Context {
-					ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+					ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
 					return ctx
-				}(),
+				},
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2), r2.WithInterval(3 * time.Minute)},
 			},
@@ -268,7 +268,7 @@ func TestGet(t *testing.T) {
 		},
 		"nil-response": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(3)},
 			},
@@ -324,7 +324,7 @@ func TestGet(t *testing.T) {
 		},
 		"too-many-request": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -367,7 +367,7 @@ func TestGet(t *testing.T) {
 		},
 		"too-many-request-without-retry-after": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -410,7 +410,7 @@ func TestGet(t *testing.T) {
 		},
 		"too-many-request-with-invalid-retry-after": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -453,7 +453,7 @@ func TestGet(t *testing.T) {
 		},
 		"client-returns-not-implemented": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -496,7 +496,7 @@ func TestGet(t *testing.T) {
 		},
 		"client-returns-399": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -522,7 +522,7 @@ func TestGet(t *testing.T) {
 		},
 		"client-returns-bad-request": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -551,7 +551,7 @@ func TestGet(t *testing.T) {
 		},
 		"client-returns-499": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestTimes(2)},
 			},
@@ -582,7 +582,7 @@ func TestGet(t *testing.T) {
 		},
 		"with-zero-max-request-times": {
 			param: param{
-				ctx:     context.Background(),
+				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(0)},
 			},
@@ -672,7 +672,7 @@ func TestGet(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.Get(tt.param.ctx, tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.Get(tt.param.ctx(), tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}
