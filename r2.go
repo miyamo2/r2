@@ -298,8 +298,9 @@ func requestWithTimeout(ctx context.Context, client internal.HttpClient, req htt
 	}
 	defer cancel()
 
-	resultCh := make(chan requestResult)
+	resultCh := make(chan requestResult, 1)
 	go func() {
+		defer close(resultCh)
 		res, err := client.Do(req.WithContext(ctx))
 		resultCh <- requestResult{res, err}
 	}()
