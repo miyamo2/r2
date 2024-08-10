@@ -29,50 +29,37 @@ go env -w GOEXPERIMENT=rangefunc
 ### Simple Usage
 
 ```go
-package main
-
-import (
-	"context"
-	"errors"
-	"github.com/miyamo2/r2"
-	"io"
-	"log/slog"
-	"net/http"
-	"time"
-)
-
-func main() {
-	ctx := context.Background()
-	opts := []r2.Option{
-		r2.WithMaxRequestTimes(3),
-		r2.WithPeriod(time.Second),
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
+opts := []r2.Option{
+	r2.WithMaxRequestTimes(3),
+	r2.WithPeriod(time.Second),
+}
+for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
+	if err != nil {
+		if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
+			slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
+			break
+		}
+		slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
+		continue
 	}
-	for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
-		if err != nil {
-			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
-				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
-				break
-			}
-			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
-			continue
-		}
-		if res == nil {
-			slog.WarnContext(ctx, "response is nil")
-			continue
-		}
-		if res.StatusCode != http.StatusOK {
-			io.Copy(io.Discard, res.Body)
-			res.Body.Close()
-		}
-
-		buf, err := io.ReadAll(res.Body)
+	if res == nil {
+		slog.WarnContext(ctx, "response is nil")
+		continue
+	}
+	if res.StatusCode != http.StatusOK {
+		io.Copy(io.Discard, res.Body)
 		res.Body.Close()
-		if err != nil {
-			slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
-			continue
-		}
-		slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
 	}
+
+	buf, err := io.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
+		continue
+	}
+	slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
 }
 ```
 
@@ -91,7 +78,8 @@ func main() {
 #### Get
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -104,7 +92,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### Head
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -117,7 +106,8 @@ for res, err := range r2.Head(ctx, "https://127.0.0.1", opts...) {
 #### Post
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -132,7 +122,8 @@ for res, err := range r2.Post(ctx, "https://127.0.0.1", body, opts...) {
 #### Put
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -147,7 +138,8 @@ for res, err := range r2.Put(ctx, "https://127.0.0.1", body, opts...) {
 #### Patch
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -162,7 +154,8 @@ for res, err := range r2.Patch(ctx, "https://127.0.0.1", body, opts...) {
 #### Delete
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -177,7 +170,8 @@ for res, err := range r2.Delete(ctx, "https://127.0.0.1", body, opts...) {
 #### PostForm
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 	r2.WithPeriod(time.Second),
@@ -206,7 +200,7 @@ for res, err := range r2.Post(ctx, "https://127.0.0.1", form, opts...) {
 | Option                                                                                                  | Description                                                                                                                                                                                                               | Default              |
 |---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
 | [`WithMaxRequestTimes`](https://github.com/miyamo2/r2?tab=readme-ov-file#withmaxrequesttimes)           | The maximum number of requests to be made.</br>If less than or equal to 0 is specified, maximum number of requests does not apply.                                                                                        | `0`                  |
-| [`WithPeriod`](https://github.com/miyamo2/r2?tab=readme-ov-file#withperiod)                             | The timeout period of the per request.</br>If less than or equal to 0 is specified, the timeout period does not apply.                                                                                                    | `0`                  |
+| [`WithPeriod`](https://github.com/miyamo2/r2?tab=readme-ov-file#withperiod)                             | The timeout period of the per request.</br>If less than or equal to 0 is specified, the timeout period does not apply. </br>If `http.Client.Timeout` is set, the shorter one is applied.                                  | `0`                  |
 | [`WithInterval`](https://github.com/miyamo2/r2?tab=readme-ov-file#withinterval)                         | The interval between next request.</br>By default, the interval is calculated by the exponential backoff and jitter.</br>If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header. | `0`                  |
 | [`WithTerminationCondition`](https://github.com/miyamo2/r2?tab=readme-ov-file#withterminationcondition) | The termination condition of the iterator that references the response.                                                                                                                                                   | `nil`                |
 | [`WithHttpClient`](https://github.com/miyamo2/r2?tab=readme-ov-file#withhttpclient)                     | The client to use for requests.                                                                                                                                                                                           | `http.DefaultClient` |
@@ -217,7 +211,8 @@ for res, err := range r2.Post(ctx, "https://127.0.0.1", form, opts...) {
 #### WithMaxRequestTimes
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestTimes(3),
 }
@@ -229,7 +224,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithPeriod
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithPeriod(time.Second),
 }
@@ -241,7 +237,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithInterval
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithInterval(time.Second),
 }
@@ -253,7 +250,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithTerminationCondition
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithTerminationCondition(func(res *http.Response) bool {
 		myHeader := res.Header.Get("X-My-Header")
@@ -268,7 +266,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithHttpClient
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 var myHttpClient *http.Client = getMyHttpClient()
 opts := []r2.Option{
 	r2.WithHttpClient(myHttpClient),
@@ -281,7 +280,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithHeader
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithHeader(http.Header{"X-My-Header": []string{"my-value"}}),
 }
@@ -293,7 +293,8 @@ for res, err := range r2.Get(ctx, "https://127.0.0.1", opts...) {
 #### WithContentType
 
 ```go
-ctx := context.Background()
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
 opts := []r2.Option{
 	r2.WithContentType("application/json"),
 }
