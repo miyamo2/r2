@@ -253,11 +253,11 @@ func TestPut(t *testing.T) {
 		"context-cancel": {
 			param: param{
 				ctx: func() context.Context {
-					ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+					ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 					return ctx
 				}(),
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithInterval(time.Minute)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithInterval(3 * time.Minute)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
