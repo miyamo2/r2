@@ -11,6 +11,9 @@ type Option func(*R2Prop)
 // Aspect adding behavior to the pre-request/post-request.
 type Aspect func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error)
 
+// TerminationCondition specifies the termination condition of the iterator that references the response.
+type TerminationCondition func(res *http.Response) bool
+
 // R2Prop is the properties of r2.
 type R2Prop struct {
 	client               HttpClient
@@ -19,7 +22,7 @@ type R2Prop struct {
 	maxRequestTimes      int
 	interval             time.Duration
 	period               time.Duration
-	terminationCondition func(res *http.Response) bool
+	terminationCondition TerminationCondition
 	newRequest           NewRequest
 	aspect               Aspect
 }
@@ -54,7 +57,7 @@ func (p *R2Prop) SetPeriod(period time.Duration) {
 }
 
 // SetTerminationCondition sets the termination condition.
-func (p *R2Prop) SetTerminationCondition(terminationCondition func(res *http.Response) bool) {
+func (p *R2Prop) SetTerminationCondition(terminationCondition TerminationCondition) {
 	p.terminationCondition = terminationCondition
 }
 
@@ -119,7 +122,7 @@ func (p *R2Prop) ContentType() string {
 }
 
 // TerminationCondition returns the termination condition.
-func (p *R2Prop) TerminationCondition() func(res *http.Response) bool {
+func (p *R2Prop) TerminationCondition() TerminationCondition {
 	return p.terminationCondition
 }
 

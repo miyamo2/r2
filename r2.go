@@ -16,6 +16,7 @@ import (
 	"math"
 	"math/rand/v2"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"slices"
 	"strconv"
@@ -31,6 +32,9 @@ type HttpClient = internal.HttpClient
 
 // Aspect adding behavior to the pre-request/post-request.
 type Aspect = internal.Aspect
+
+// TerminationCondition specifies the termination condition of the iterator that references the response.
+type TerminationCondition = internal.TerminationCondition
 
 // ErrTerminatedWithClientErrorResponse is returned when the response status code is 4xx.
 // However, in the case of 429(Too Many Request) it would not be applicable.
@@ -198,7 +202,7 @@ func WithPeriod(period time.Duration) internal.Option {
 }
 
 // WithTerminationCondition sets the termination condition of the iterator that references the response.
-func WithTerminationCondition(terminationCondition func(res *http.Response) bool) internal.Option {
+func WithTerminationCondition(terminationCondition TerminationCondition) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetTerminationCondition(terminationCondition)
 	}
@@ -265,7 +269,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 						return
 					}
 					if cond := prop.TerminationCondition(); cond != nil {
-						if cond(res) {
+						if checkTerminationConditionAreSatisfied(ctx, res, cond) {
 							return
 						}
 					} else if res.StatusCode < http.StatusBadRequest {
@@ -372,4 +376,36 @@ func getBodyFromBytes(b []byte) internal.GetBodyFunc {
 
 func noopSeq(_ func(*http.Response, error) bool) {
 	// no-op
+}
+
+// checkTerminationConditionAreSatisfied returns whether the termination condition specified in `WithTerminationCondition` is satisfied.
+//
+// The request body is closed after the check is completed.
+func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, cond TerminationCondition) bool {
+	dumpedResBody, err := httputil.DumpResponse(res, true)
+	if err != nil {
+		slog.Default().WarnContext(ctx, "[r2]: failed to dump response.", slog.Any("error", err))
+		return false
+	}
+	dumpedRes := &http.Response{
+		Status:           res.Status,
+		StatusCode:       res.StatusCode,
+		Proto:            res.Proto,
+		ProtoMajor:       res.ProtoMajor,
+		ProtoMinor:       res.ProtoMinor,
+		Header:           res.Header,
+		Body:             io.NopCloser(bytes.NewReader(dumpedResBody)),
+		ContentLength:    res.ContentLength,
+		TransferEncoding: res.TransferEncoding,
+		Close:            false,
+		Uncompressed:     false,
+		Trailer:          res.Trailer,
+		Request:          res.Request,
+		TLS:              res.TLS,
+	}
+	defer func() {
+		io.Copy(io.Discard, dumpedRes.Body)
+		dumpedRes.Body.Close()
+	}()
+	return cond(dumpedRes)
 }

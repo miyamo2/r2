@@ -100,7 +100,9 @@ func TestDelete(t *testing.T) {
 						},
 					},
 					result: clientResult{
-						res: &ResponseOK,
+						res: &http.Response{
+							StatusCode: http.StatusOK,
+						},
 					},
 				},
 				{
