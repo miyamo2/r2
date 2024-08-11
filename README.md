@@ -502,6 +502,15 @@ cd ./u6t
 go test -v -coverpkg=github.com/miyamo2/r2 ./... -coverprofile=coverage.out 
 ```
 
+#### test:integration
+
+Run Integration Test
+
+```sh
+cd ./i13t
+go test -v -coverpkg=github.com/miyamo2/r2 ./... -coverprofile=coverage.out 
+```
+
 ## License
 
 **r2** released under the [MIT License](https://github.com/miyamo2/r2/blob/main/LICENSE)

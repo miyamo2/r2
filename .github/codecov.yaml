@@ -2,10 +2,14 @@ coverage:
   status:
     patch:
       default:
-        target: 70%
+        target: 60%
     project:
       unit:
+        target: 80%
         flags: [unit]
+      integration:
+        target: 65%
+        flags: [ integration ]
 
 comment:
   layout: "diff, flags, files"

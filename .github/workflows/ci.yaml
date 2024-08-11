@@ -69,3 +69,17 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           flags: unit
+
+      - name: Integration Test
+        run: |
+          xc test:integration
+
+      - name: Upload integration test coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: ${{ matrix.goversion == 'stable' }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./i13t/coverage.out
+          fail_ci_if_error: false
+          verbose: true
+          flags: integration
