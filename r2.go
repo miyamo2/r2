@@ -240,6 +240,11 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 		i := 0
 		for {
 			res, err := requestWithTimeout(ctx, client, *req, prop.Period(), prop.Aspect())
+
+			var terminateByResponseValue *bool
+			if cond := prop.TerminationCondition(); cond != nil {
+				terminateByResponseValue = checkTerminationConditionAreSatisfied(ctx, res, cond)
+			}
 			if !yield(res, err) {
 				return
 			}
@@ -268,8 +273,8 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 						yield(nil, errors.Join(ErrTerminatedWithClientErrorResponse, errors.New(res.Status)))
 						return
 					}
-					if cond := prop.TerminationCondition(); cond != nil {
-						if checkTerminationConditionAreSatisfied(ctx, res, cond) {
+					if terminateByResponseValue != nil {
+						if *terminateByResponseValue {
 							return
 						}
 					} else if res.StatusCode < http.StatusBadRequest {
@@ -381,11 +386,13 @@ func noopSeq(_ func(*http.Response, error) bool) {
 // checkTerminationConditionAreSatisfied returns whether the termination condition specified in `WithTerminationCondition` is satisfied.
 //
 // The request body is closed after the check is completed.
-func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, cond TerminationCondition) bool {
+func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, cond TerminationCondition) *bool {
+	physicalResult := false
+
 	dumpedResBody, err := httputil.DumpResponse(res, true)
 	if err != nil {
 		slog.Default().WarnContext(ctx, "[r2]: failed to dump response.", slog.Any("error", err))
-		return false
+		return &physicalResult
 	}
 	dumpedRes := &http.Response{
 		Status:           res.Status,
@@ -407,5 +414,6 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 		io.Copy(io.Discard, dumpedRes.Body)
 		dumpedRes.Body.Close()
 	}()
-	return cond(dumpedRes)
+	physicalResult = cond(dumpedRes)
+	return &physicalResult
 }
