@@ -906,6 +906,52 @@ func TestPostForm(t *testing.T) {
 				},
 			},
 		},
+		"with-auto-close-response-disable": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithAutoCloseResponseBody(false)},
+				form:    url.Values{"foo": []string{"bar"}},
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+						},
+					},
+					result: clientResult{
+						res: &ResponseInternalServerError,
+						err: ErrTest,
+					},
+				},
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+						},
+					},
+					result: clientResult{
+						res: &ResponseOK,
+					},
+				},
+			},
+			wants: []want{
+				{
+					res: &ResponseInternalServerError,
+					err: ErrTest,
+				},
+				{
+					res: &ResponseOK,
+				},
+			},
+		},
 	}
 
 	for name, tt := range tests {

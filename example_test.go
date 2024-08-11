@@ -37,18 +37,16 @@ func Example() {
 			continue
 		}
 		if res.StatusCode != http.StatusOK {
-			io.Copy(io.Discard, res.Body)
-			res.Body.Close()
 			continue
 		}
 
 		buf, err := io.ReadAll(res.Body)
-		res.Body.Close()
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
 			continue
 		}
 		slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
+		// There is no need to close the response body yourself as automatic closing is enabled by default.
 	}
 }
 
@@ -223,6 +221,18 @@ func Example_WithTerminationCondition() {
 			myHeader := res.Header.Get("X-My-Header")
 			return len(myHeader) > 0
 		}),
+	}
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+		// do something
+		_, _ = res, err
+	}
+}
+
+func Example_WithAutoCloseResponseBody() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	opts := []r2.Option{
+		r2.WithAutoCloseResponseBody(true),
 	}
 	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something

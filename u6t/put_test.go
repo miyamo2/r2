@@ -899,6 +899,52 @@ func TestPut(t *testing.T) {
 				},
 			},
 		},
+		"with-auto-close-response-disable": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithAutoCloseResponseBody(false)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPut,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						res: &ResponseInternalServerError,
+						err: ErrTest,
+					},
+				},
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodPut,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						res: &ResponseOK,
+					},
+				},
+			},
+			wants: []want{
+				{
+					res: &ResponseInternalServerError,
+					err: ErrTest,
+				},
+				{
+					res: &ResponseOK,
+				},
+			},
+		},
 	}
 
 	for name, tt := range tests {

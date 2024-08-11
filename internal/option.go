@@ -16,15 +16,16 @@ type TerminationCondition func(res *http.Response) bool
 
 // R2Prop is the properties of r2.
 type R2Prop struct {
-	client               HttpClient
-	contentType          string
-	header               http.Header
-	maxRequestTimes      int
-	interval             time.Duration
-	period               time.Duration
-	terminationCondition TerminationCondition
-	newRequest           NewRequest
-	aspect               Aspect
+	client                HttpClient
+	contentType           string
+	header                http.Header
+	maxRequestTimes       int
+	interval              time.Duration
+	period                time.Duration
+	terminationCondition  TerminationCondition
+	newRequest            NewRequest
+	aspect                Aspect
+	autoCloseResponseBody bool
 }
 
 // SetClient sets the client.
@@ -71,11 +72,13 @@ func (p *R2Prop) SetAspect(aspect Aspect) {
 	p.aspect = aspect
 }
 
+// SetAutoCloseResponseBody sets the auto close response.
+func (p *R2Prop) SetAutoCloseResponseBody(autoCloseResponse bool) {
+	p.autoCloseResponseBody = autoCloseResponse
+}
+
 // Client returns the client. If the client is nil, it returns http.DefaultClient.
 func (p *R2Prop) Client() HttpClient {
-	if p.client == nil {
-		return http.DefaultClient
-	}
 	return p.client
 }
 
@@ -128,17 +131,23 @@ func (p *R2Prop) TerminationCondition() TerminationCondition {
 
 // Aspect returns the behavior to the pre-request/post-request.
 func (p *R2Prop) Aspect() Aspect {
-	if p.aspect == nil {
-		return func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
-			return do(req)
-		}
-	}
 	return p.aspect
+}
+
+// AutoCloseResponseBody returns the auto close response body.
+func (p *R2Prop) AutoCloseResponseBody() bool {
+	return p.autoCloseResponseBody
 }
 
 // NewR2Prop returns a new R2Prop.
 func NewR2Prop(opts ...Option) R2Prop {
-	p := R2Prop{}
+	p := R2Prop{
+		client: http.DefaultClient,
+		aspect: func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+			return do(req)
+		},
+		autoCloseResponseBody: true,
+	}
 	for _, o := range opts {
 		o(&p)
 	}

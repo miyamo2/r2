@@ -214,6 +214,13 @@ func WithAspect(aspect Aspect) internal.Option {
 	}
 }
 
+// WithAutoCloseResponseBody sets whether the response body is automatically closed. By default, this setting is enabled.
+func WithAutoCloseResponseBody(autoCloseResponseBody bool) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetAutoCloseResponseBody(autoCloseResponseBody)
+	}
+}
+
 // responseSeq returns a sequence of [http.Response] and error.
 func responseSeq(ctx context.Context, url, method string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
 	prop := internal.NewR2Prop(options...)
@@ -244,7 +251,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 			if cond := prop.TerminationCondition(); cond != nil {
 				terminateByResponseValue = checkTerminationConditionAreSatisfied(ctx, res, cond)
 			}
-			if !yield(res, err) {
+			if !yieldWithAutoClose(res, err, prop.AutoCloseResponseBody(), yield) {
 				return
 			}
 
@@ -433,4 +440,12 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 	}()
 	physicalResult = cond(copiedRes)
 	return &physicalResult
+}
+
+// yieldWithAutoClose calls yield and then closes [http.Response.Body].
+func yieldWithAutoClose(res *http.Response, err error, autoClose bool, yield func(*http.Response, error) bool) bool {
+	if res != nil && res.Body != nil && autoClose {
+		defer res.Body.Close()
+	}
+	return yield(res, err)
 }

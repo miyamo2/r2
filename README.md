@@ -50,18 +50,16 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		continue
 	}
 	if res.StatusCode != http.StatusOK {
-		io.Copy(io.Discard, res.Body)
-		res.Body.Close()
 		continue
 	}
 
 	buf, err := io.ReadAll(res.Body)
-	res.Body.Close()
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
 		continue
 	}
 	slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
+	// There is no need to close the response body yourself as auto closing is enabled by default.
 }
 ```
 
@@ -310,6 +308,7 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 | [`WithHeader`](https://github.com/miyamo2/r2?tab=readme-ov-file#withheader)                             | The custom http headers for the request.                                                                                                                                                                                  | `http.Header`(blank) |
 | [`WithContentType`](https://github.com/miyamo2/r2?tab=readme-ov-file#withcontenttype)                   | The 'Content-Type' for the request.                                                                                                                                                                                       | `''`                 |
 | [`WithAspect`](https://github.com/miyamo2/r2?tab=readme-ov-file#withaspect)                             | The behavior to the pre-request/post-request.                                                                                                                                                                             | -                    |
+| [`WithAutoCloseResponseBody`](https://github.com/miyamo2/r2?tab=readme-ov-file#withautocloseresponse)   | The whether the response body is automatically closed.</br>By default, this setting is enabled.                                                                                                                           | `true`               |
 
 #### WithMaxRequestTimes
 
@@ -417,6 +416,19 @@ opts := []r2.Option{
         res.StatusCode = res.StatusCode + 1
         return res, err
     }),
+}
+for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+    // do something
+}
+```
+
+#### WithAutoCloseResponseBody
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
+opts := []r2.Option{
+    r2.WithAutoCloseResponseBody(true),
 }
 for res, err := range r2.Get(ctx, "https://example.com", opts...) {
     // do something
