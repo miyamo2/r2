@@ -72,10 +72,10 @@ const (
 
 // Head sends HTTP HEAD requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -84,10 +84,10 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 
 // Get sends HTTP GET requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -96,10 +96,10 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 
 // Post sends HTTP POST requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Post(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -108,10 +108,10 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 
 // PostForm sends HTTP POST requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func PostForm(ctx context.Context, url string, data url.Values, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -121,10 +121,10 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 
 // Put sends HTTP PUT requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Put(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -133,10 +133,10 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 
 // Patch sends HTTP PATCH requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Patch(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -145,10 +145,10 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 
 // Delete sends HTTP DELETE requests until one of the following conditions is satisfied.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition specified in [WithTerminationCondition] is satisfied
-//   - response status code is a 4xx(client error) other than 429(Too Many Request)
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached
-//   - exceeds the deadline for the [context.Context] passed in the argument
+//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
 func Delete(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
