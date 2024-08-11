@@ -431,6 +431,17 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 
 Feel free to open a PR or an Issue.
 
+### Tree
+
+```sh
+.
+├ .doc/  # Documentation
+├ .github/
+│    └ workflows/  # GitHub Actions Workflow
+├ internal/  # Internal Package; Shared with sub-packages.
+└ u6t/  # Unit Test
+```
+
 ### Tasks
 
 We recommend that this section be run with [`xc`](https://github.com/joerdav/xc).
