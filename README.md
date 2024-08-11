@@ -289,7 +289,7 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 
 #### Termination Conditions
 
-- Request succeeds and termination condition is not specified.
+- Request succeeded and no termination condition is specified by `WithTerminationCondition`.
 - Condition specified in `WithTerminationCondition` is satisfied.
 - Response status code is a `4xx Client Error` other than `429: Too Many Request`.
 - Maximum number of requests specified in `WithMaxRequestTimes` is reached.

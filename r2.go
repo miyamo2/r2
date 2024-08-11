@@ -67,7 +67,7 @@ const (
 )
 
 // Head sends HTTP HEAD requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -79,7 +79,7 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 }
 
 // Get sends HTTP GET requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -91,7 +91,7 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 }
 
 // Post sends HTTP POST requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -103,7 +103,7 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 }
 
 // PostForm sends HTTP POST requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -116,7 +116,7 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 }
 
 // Put sends HTTP PUT requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -128,7 +128,7 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 }
 
 // Patch sends HTTP PATCH requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
@@ -140,7 +140,7 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 }
 
 // Delete sends HTTP DELETE requests until one of the following conditions is satisfied.
-//   - request succeeds and termination condition is not specified
+//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition specified in [WithTerminationCondition] is satisfied
 //   - response status code is a 4xx(client error) other than 429(Too Many Request)
 //   - maximum number of requests specified in [WithMaxRequestTimes] is reached
