@@ -15,6 +15,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -108,6 +109,7 @@ func TestGetWithContextCancel(t *testing.T) {
 }
 
 func TestGetWithMaxRequestTimes(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -226,6 +228,7 @@ func TestGetWithInterval(t *testing.T) {
 }
 
 func TestGetWithTerminationCondition(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body := TestResponse{
@@ -294,6 +297,7 @@ func TestGetWithTerminationCondition(t *testing.T) {
 }
 
 func TestGetWithContentType(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "" {
@@ -349,6 +353,7 @@ func TestGetWithContentType(t *testing.T) {
 }
 
 func TestGetWithHeader(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Test") != "test" {
@@ -404,6 +409,7 @@ func TestGetWithHeader(t *testing.T) {
 }
 
 func TestGetWithAspect(t *testing.T) {
+	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, err := io.ReadAll(r.Body)
 		if err != nil {

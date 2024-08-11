@@ -211,6 +211,7 @@ func TestHeadWithInterval(t *testing.T) {
 }
 
 func TestHeadWithTerminationCondition(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-My-Header", fmt.Sprintf("%d", reqTimes))
@@ -265,6 +266,7 @@ func TestHeadWithTerminationCondition(t *testing.T) {
 }
 
 func TestHeadWithContentType(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "" {
@@ -315,6 +317,7 @@ func TestHeadWithContentType(t *testing.T) {
 }
 
 func TestHeadWithHeader(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Test") != "test" {
@@ -365,6 +368,7 @@ func TestHeadWithHeader(t *testing.T) {
 }
 
 func TestHeadWithAspect(t *testing.T) {
+	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Test") != "test" {
 			w.WriteHeader(http.StatusInternalServerError)

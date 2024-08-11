@@ -15,6 +15,7 @@ import (
 )
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -120,6 +121,7 @@ func TestDeleteWithContextCancel(t *testing.T) {
 }
 
 func TestDeleteWithMaxRequestTimes(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -256,6 +258,7 @@ func TestDeleteWithInterval(t *testing.T) {
 }
 
 func TestDeleteWithTerminationCondition(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body := TestResponse{
@@ -325,6 +328,7 @@ func TestDeleteWithTerminationCondition(t *testing.T) {
 }
 
 func TestDeleteWithContentType(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != r2.ContentTypeApplicationJSON {
@@ -387,6 +391,7 @@ func TestDeleteWithContentType(t *testing.T) {
 }
 
 func TestDeleteWithHeader(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Test") != "test" {
@@ -448,6 +453,7 @@ func TestDeleteWithHeader(t *testing.T) {
 }
 
 func TestDeleteWithAspect(t *testing.T) {
+	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		testReq := RequestFromBuffer(r.Body)
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
@@ -493,6 +499,7 @@ func TestDeleteWithAspect(t *testing.T) {
 }
 
 func TestDeleteWithAutoCloseResponseBody(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {

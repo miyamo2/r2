@@ -15,6 +15,7 @@ import (
 )
 
 func TestPatch(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -120,6 +121,7 @@ func TestPatchWithContextCancel(t *testing.T) {
 }
 
 func TestPatchWithMaxRequestTimes(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -256,6 +258,7 @@ func TestPatchWithInterval(t *testing.T) {
 }
 
 func TestPatchWithTerminationCondition(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body := TestResponse{
@@ -325,6 +328,7 @@ func TestPatchWithTerminationCondition(t *testing.T) {
 }
 
 func TestPatchWithContentType(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != r2.ContentTypeApplicationJSON {
@@ -387,6 +391,7 @@ func TestPatchWithContentType(t *testing.T) {
 }
 
 func TestPatchWithHeader(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-Test") != "test" {
@@ -448,6 +453,7 @@ func TestPatchWithHeader(t *testing.T) {
 }
 
 func TestPatchWithAspect(t *testing.T) {
+	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		testReq := RequestFromBuffer(r.Body)
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
@@ -493,6 +499,7 @@ func TestPatchWithAspect(t *testing.T) {
 }
 
 func TestPatchWithAutoCloseResponseBody(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
