@@ -24,7 +24,8 @@ jobs:
   security:
     runs-on: ubuntu-latest
     env:
-      GO_VERSION: "latest"
+      GO_VERSION: "stable"
+
     steps:
       - uses: actions/checkout@v4
 
