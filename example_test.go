@@ -239,3 +239,19 @@ func Example_WithAutoCloseResponseBody() {
 		_, _ = res, err
 	}
 }
+
+func Example_WithAspect() {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	opts := []r2.Option{
+		r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+			res, err := do(req)
+			res.StatusCode = res.StatusCode + 1
+			return res, err
+		}),
+	}
+	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+		// do something
+		_, _ = res, err
+	}
+}
