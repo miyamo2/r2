@@ -64,6 +64,7 @@ type clientParamResultPair struct {
 
 var cmpResponseOptions = cmp.Options{
 	cmpopts.IgnoreUnexported(http.Response{}),
+	cmpopts.IgnoreFields(http.Response{}, "Body"),
 }
 
 var cmpRequestOptions = cmp.Options{
@@ -249,4 +250,38 @@ func HelperMustURLParse(s string) *url.URL {
 		panic(err)
 	}
 	return u
+}
+
+func CmpResponse(a, b *http.Response) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if diff := cmp.Diff(a, b, cmpResponseOptions); diff != "" {
+		slog.Default().Error("unexpected response", slog.Any("expect", *a), slog.Any("got", *b))
+		return false
+	}
+	bodyA, bodyB := a.Body, b.Body
+	if bodyA == nil {
+		return bodyB == nil
+	}
+	if bodyA == http.NoBody {
+		return bodyB == http.NoBody
+	}
+	switch bodyA.(type) {
+	case *invalidReadCloser:
+		return true
+	}
+	bufA, err := io.ReadAll(bodyA)
+	if err != nil {
+		return false
+	}
+	bufB, err := io.ReadAll(bodyB)
+	if err != nil {
+		return false
+	}
+	if diff := cmp.Diff(bufA, bufB); diff != "" {
+		slog.Default().Error("unexpected response body", slog.Any("expect", string(bufA)), slog.Any("got", string(bufB)))
+		return false
+	}
+	return true
 }

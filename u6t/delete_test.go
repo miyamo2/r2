@@ -3,13 +3,14 @@ package u6t
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
-	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/r2"
 	"github.com/miyamo2/r2/internal"
 	"go.uber.org/mock/gomock"
 	"io"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -82,10 +83,20 @@ func TestDelete(t *testing.T) {
 				ctx: context.Background,
 				url: "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithTerminationCondition(func(res *http.Response) bool {
-					if xSomething, ok := res.Header["x-something"]; ok {
-						return len(xSomething) == 1 && xSomething[0] == "value"
+					var gotBody map[string]interface{}
+					err := json.NewDecoder(res.Body).Decode(&gotBody)
+					if err != nil {
+						return false
 					}
-					return false
+					numStr, ok := gotBody["num"]
+					if !ok {
+						return false
+					}
+					num, err := strconv.Atoi(numStr.(string))
+					if err != nil {
+						return false
+					}
+					return num == 1
 				})},
 				body: bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
@@ -102,6 +113,7 @@ func TestDelete(t *testing.T) {
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
+							Body:       http.NoBody,
 						},
 					},
 				},
@@ -117,19 +129,22 @@ func TestDelete(t *testing.T) {
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
-							Header:     http.Header{"x-something": []string{"value"}},
+							Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
 						},
 					},
 				},
 			},
 			wants: []want{
 				{
-					res: &ResponseOK,
+					res: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       http.NoBody,
+					},
 				},
 				{
 					res: &http.Response{
 						StatusCode: http.StatusOK,
-						Header:     http.Header{"x-something": []string{"value"}},
+						Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
 					},
 				},
 			},
@@ -926,8 +941,8 @@ func TestDelete(t *testing.T) {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}
 				w := tt.wants[i]
-				if diff := cmp.Diff(w.res, res, cmpResponseOptions); diff != "" {
-					t.Errorf("unexpected response (-want +got):\n%s", diff)
+				if !CmpResponse(w.res, res) {
+					t.Errorf("unexpected response want: %v, got: %v:\n", w.res, res)
 				}
 				if !errors.Is(err, w.err) {
 					t.Errorf("unexpected error want: %v, got: %v", w.err, err)

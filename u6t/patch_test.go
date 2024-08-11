@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/r2"
 	"github.com/miyamo2/r2/internal"
 	"go.uber.org/mock/gomock"
@@ -926,8 +925,8 @@ func TestPatch(t *testing.T) {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}
 				w := tt.wants[i]
-				if diff := cmp.Diff(w.res, res, cmpResponseOptions); diff != "" {
-					t.Errorf("unexpected response (-want +got):\n%s", diff)
+				if !CmpResponse(w.res, res) {
+					t.Errorf("unexpected response want: %v, got: %v:\n", w.res, res)
 				}
 				if !errors.Is(err, w.err) {
 					t.Errorf("unexpected error want: %v, got: %v", w.err, err)

@@ -16,7 +16,6 @@ import (
 	"math"
 	"math/rand/v2"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"slices"
 	"strconv"
@@ -364,11 +363,11 @@ func rewindBody(req *http.Request) (getBody internal.GetBodyFunc, err error) {
 	tr := io.TeeReader(req.Body, &buf)
 	req.Body = io.NopCloser(&buf)
 
-	bytes, err := io.ReadAll(tr)
+	b, err := io.ReadAll(tr)
 	if err != nil {
 		return nil, err
 	}
-	getBody = getBodyFromBytes(bytes)
+	getBody = getBodyFromBytes(b)
 	return
 }
 
@@ -388,20 +387,17 @@ func noopSeq(_ func(*http.Response, error) bool) {
 // The request body is closed after the check is completed.
 func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, cond TerminationCondition) *bool {
 	physicalResult := false
-
-	dumpedResBody, err := httputil.DumpResponse(res, true)
-	if err != nil {
-		slog.Default().WarnContext(ctx, "[r2]: failed to dump response.", slog.Any("error", err))
+	if res == nil {
 		return &physicalResult
 	}
-	dumpedRes := &http.Response{
+
+	copiedRes := &http.Response{
 		Status:           res.Status,
 		StatusCode:       res.StatusCode,
 		Proto:            res.Proto,
 		ProtoMajor:       res.ProtoMajor,
 		ProtoMinor:       res.ProtoMinor,
 		Header:           res.Header,
-		Body:             io.NopCloser(bytes.NewReader(dumpedResBody)),
 		ContentLength:    res.ContentLength,
 		TransferEncoding: res.TransferEncoding,
 		Close:            false,
@@ -410,10 +406,31 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 		Request:          res.Request,
 		TLS:              res.TLS,
 	}
+	if res.Body == nil {
+		physicalResult = cond(copiedRes)
+		return &physicalResult
+	}
+	if res.Body == http.NoBody {
+		copiedRes.Body = http.NoBody
+		physicalResult = cond(copiedRes)
+		return &physicalResult
+	}
+	buf := bytes.Buffer{}
+	tr := io.TeeReader(res.Body, &buf)
+	res.Body = io.NopCloser(&buf)
+
+	b, err := io.ReadAll(tr)
+	if err != nil {
+		slog.Default().WarnContext(ctx, "[r2]: failed to read response body.", slog.Any("error", err))
+		physicalResult = cond(copiedRes)
+		return &physicalResult
+	}
+
+	copiedRes.Body = io.NopCloser(bytes.NewBuffer(b))
 	defer func() {
-		io.Copy(io.Discard, dumpedRes.Body)
-		dumpedRes.Body.Close()
+		io.Copy(io.Discard, copiedRes.Body)
+		copiedRes.Body.Close()
 	}()
-	physicalResult = cond(dumpedRes)
+	physicalResult = cond(copiedRes)
 	return &physicalResult
 }
