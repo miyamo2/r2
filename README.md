@@ -413,7 +413,7 @@ defer cancel()
 opts := []r2.Option{
     r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
         res, err := do(req)
-        res.StatusCode = res.StatusCode + 1
+        res.StatusCode += 1
         return res, err
     }),
 }
