@@ -441,17 +441,18 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 
 ## For Contributors
 
-Feel free to open a PR or an Issue.
+Feel free to open a PR or an Issue.  
+However, you must promise to follow our [Code of Conduct](https://github.com/miyamo2/r2/blob/main/CODE_OF_CONDUCT.md).
 
 ### Tree
 
 ```sh
 .
-├ .doc/  # Documentation
+├ .doc/            # Documentation
 ├ .github/
 │    └ workflows/  # GitHub Actions Workflow
-├ internal/  # Internal Package; Shared with sub-packages.
-└ u6t/  # Unit Test
+├ internal/        # Internal Package; Shared with sub-packages.
+└ u6t/             # Unit Test
 ```
 
 ### Tasks
