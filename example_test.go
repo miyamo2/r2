@@ -50,7 +50,7 @@ func Example() {
 	}
 }
 
-func Example_Head() {
+func ExampleHead() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -63,7 +63,7 @@ func Example_Head() {
 	}
 }
 
-func Example_Get() {
+func ExampleGet() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -76,7 +76,7 @@ func Example_Get() {
 	}
 }
 
-func Example_Post() {
+func ExamplePost() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -91,7 +91,7 @@ func Example_Post() {
 	}
 }
 
-func Example_Put() {
+func ExamplePut() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -106,7 +106,7 @@ func Example_Put() {
 	}
 }
 
-func Example_Patch() {
+func ExamplePatch() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -121,7 +121,7 @@ func Example_Patch() {
 	}
 }
 
-func Example_Delete() {
+func ExampleDelete() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -136,7 +136,7 @@ func Example_Delete() {
 	}
 }
 
-func Example_PostForm() {
+func ExamplePostForm() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -153,7 +153,7 @@ func Example_PostForm() {
 
 var myHttpClient *http.Client
 
-func Example_WithHttpClient() {
+func ExampleWithHttpClient() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -165,7 +165,7 @@ func Example_WithHttpClient() {
 	}
 }
 
-func Example_WithHeader() {
+func ExampleWithHeader() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -177,7 +177,7 @@ func Example_WithHeader() {
 	}
 }
 
-func Example_WithInterval() {
+func ExampleWithInterval() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -189,7 +189,7 @@ func Example_WithInterval() {
 	}
 }
 
-func Example_WithMaxRequestTimes() {
+func ExampleWithMaxRequestTimes() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -201,7 +201,7 @@ func Example_WithMaxRequestTimes() {
 	}
 }
 
-func Example_WithPeriod() {
+func ExampleWithPeriod() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -213,7 +213,7 @@ func Example_WithPeriod() {
 	}
 }
 
-func Example_WithTerminationCondition() {
+func ExampleWithTerminationCondition() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -228,7 +228,7 @@ func Example_WithTerminationCondition() {
 	}
 }
 
-func Example_WithAutoCloseResponseBody() {
+func ExampleWithAutoCloseResponseBody() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
@@ -240,7 +240,7 @@ func Example_WithAutoCloseResponseBody() {
 	}
 }
 
-func Example_WithAspect() {
+func ExampleWithAspect() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{

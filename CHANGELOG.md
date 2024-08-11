@@ -1,3 +1,9 @@
+## 0.1.1 - 2024-08-11
+
+### 📚Documentation
+
+- Fix method signatures in Examples
+
 ## 0.1.0 - 2024-08-11
 
 ### 🎉Initial Release
