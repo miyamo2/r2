@@ -23,8 +23,33 @@ permissions: write-all
 jobs:
   security:
     runs-on: ubuntu-latest
+    env:
+      GO_VERSION: "latest"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Setup xc
+        uses: joerdav/setup-xc@v0.0.3
+
+      - name: Setup deps
+        run: |
+          xc setup:deps
+
+      - name: Setup Go env
+        run: |
+          xc setup:goenv
+
+      - name: Go Generate
+        run: |
+          xc setup:mocks
+          git diff --exit-code
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/golang@master
