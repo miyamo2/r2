@@ -74,7 +74,6 @@ func TestPut(t *testing.T) {
 func TestPutWithContextCancel(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(150 * time.Millisecond)
 		switch reqTimes {
 		case 1:
 			testReq := RequestFromBuffer(r.Body)
@@ -110,11 +109,11 @@ func TestPutWithContextCancel(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Put(ctx, ts.URL, body) {
+	for res, err := range r2.Put(ctx, ts.URL, body, r2.WithInterval(3*time.Minute)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}

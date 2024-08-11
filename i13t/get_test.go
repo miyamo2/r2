@@ -68,7 +68,6 @@ func TestGet(t *testing.T) {
 func TestGetWithContextCancel(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(150 * time.Millisecond)
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
@@ -99,10 +98,10 @@ func TestGetWithContextCancel(t *testing.T) {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	i := 0
-	for res, err := range r2.Get(ctx, ts.URL) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithInterval(3*time.Minute)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
