@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":prHourlyLimitNone",
+    ":automergePatch"
+  ],
+  "schedule": ["after 6am on sunday", "before 9am on monday"],
+  "automergeSchedule": ["after 6am on sunday", "before 9am on monday"],
+  "dependencyDashboard": true,
+
+  "major": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "paths": ["u6t/**"],
+      "managers": ["gomod"],
+      "additionalBranchPrefix": "{{parentDir}}-",
+      "packagePatterns": [".*"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "paths": ["i13t/**"],
+      "managers": ["gomod"],
+      "additionalBranchPrefix": "{{parentDir}}-",
+      "packagePatterns": [".*"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
+  ]
+}
