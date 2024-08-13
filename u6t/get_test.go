@@ -545,9 +545,6 @@ func TestGet(t *testing.T) {
 				{
 					res: &ResponseBadRequest,
 				},
-				{
-					err: r2.ErrTerminatedWithClientErrorResponse,
-				},
 			},
 		},
 		"client-returns-499": {
@@ -575,9 +572,6 @@ func TestGet(t *testing.T) {
 				{
 					res: &Response499,
 					err: ErrTest,
-				},
-				{
-					err: r2.ErrTerminatedWithClientErrorResponse,
 				},
 			},
 		},

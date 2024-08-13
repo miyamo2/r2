@@ -21,10 +21,6 @@ func Example() {
 	}
 	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		if err != nil {
-			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
-				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
-				break
-			}
 			if errors.Is(err, context.DeadlineExceeded) {
 				slog.ErrorContext(ctx, "deadline exceeded.", slog.Any("error", err))
 				break

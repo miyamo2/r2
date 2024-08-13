@@ -8,7 +8,6 @@ package r2
 import (
 	"bytes"
 	"context"
-	"errors"
 	"github.com/miyamo2/r2/internal"
 	"io"
 	"iter"
@@ -16,6 +15,7 @@ import (
 	"math"
 	"math/rand/v2"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"slices"
 	"strconv"
@@ -34,10 +34,6 @@ type Aspect = internal.Aspect
 
 // TerminationCondition specifies the termination condition of the iterator that references the response.
 type TerminationCondition = internal.TerminationCondition
-
-// ErrTerminatedWithClientErrorResponse is returned when the response status code is 4xx.
-// However, in the case of 429(Too Many Request) it would not be applicable.
-var ErrTerminatedWithClientErrorResponse = errors.New("4xx response")
 
 // ContentTypes
 const (
@@ -276,7 +272,13 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 					wait = time.Duration(atoi)
 				default:
 					if res.StatusCode >= http.StatusBadRequest && res.StatusCode < http.StatusInternalServerError {
-						yield(nil, errors.Join(ErrTerminatedWithClientErrorResponse, errors.New(res.Status)))
+						dumpRes, _ := httputil.DumpResponse(res, true)
+						slog.Default().WarnContext(
+							ctx,
+							"[r2]: terminated with client error.",
+							slog.String("url", req.URL.String()),
+							slog.String("method", req.Method),
+							slog.String("response", string(dumpRes)))
 						return
 					}
 					if terminateByResponseValue != nil {

@@ -38,10 +38,6 @@ opts := []r2.Option{
 }
 for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 	if err != nil {
-		if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
-			slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
-			break
-		}
 		slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
 		continue
 	}
@@ -132,10 +128,6 @@ for {
 	case result := <-resultCh:
 		err := result.err
 		if err != nil {
-			if errors.Is(err, r2.ErrTerminatedWithClientErrorResponse) {
-				slog.ErrorContext(ctx, "terminated with client error response.", slog.Any("error", err))
-				break
-			}
 			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
 			continue
 		}
