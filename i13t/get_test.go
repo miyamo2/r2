@@ -108,7 +108,7 @@ func TestGetWithContextCancel(t *testing.T) {
 	}
 }
 
-func TestGetWithMaxRequestTimes(t *testing.T) {
+func TestGetWithMaxRequestAttempts(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -152,7 +152,7 @@ func TestGetWithMaxRequestTimes(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Get(ctx, ts.URL, r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -179,7 +179,7 @@ func TestGetWithPeriod(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Get(ctx, ts.URL, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -221,7 +221,7 @@ func TestGetWithInterval(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
 	defer cancel()
 	i := 0
-	for res, err := range r2.Get(ctx, ts.URL, r2.WithInterval(time.Minute), r2.WithMaxRequestTimes(3)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}

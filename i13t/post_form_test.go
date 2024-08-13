@@ -137,7 +137,7 @@ func TestPostFormWithContextCancel(t *testing.T) {
 	}
 }
 
-func TestPostFormWithMaxRequestTimes(t *testing.T) {
+func TestPostFormWithMaxRequestAttempts(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -194,7 +194,7 @@ func TestPostFormWithMaxRequestTimes(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -234,7 +234,7 @@ func TestPostFormWithPeriod(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -290,7 +290,7 @@ func TestPostFormWithInterval(t *testing.T) {
 	defer cancel()
 	i := 0
 	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithInterval(time.Minute), r2.WithMaxRequestTimes(3)) {
+	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}

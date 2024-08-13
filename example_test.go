@@ -16,7 +16,7 @@ func Example() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
@@ -54,7 +54,7 @@ func ExampleHead() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	for res, err := range r2.Head(ctx, "https://example.com", opts...) {
@@ -67,7 +67,7 @@ func ExampleGet() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
@@ -81,7 +81,7 @@ func ExamplePost() {
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
@@ -96,7 +96,7 @@ func ExamplePut() {
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
@@ -111,7 +111,7 @@ func ExamplePatch() {
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
@@ -126,7 +126,7 @@ func ExampleDelete() {
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
@@ -141,7 +141,7 @@ func ExamplePostForm() {
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
 	form := url.Values{"foo": []string{"bar"}}
@@ -189,11 +189,11 @@ func ExampleWithInterval() {
 	}
 }
 
-func ExampleWithMaxRequestTimes() {
+func ExampleWithMaxRequestAttempts() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
-		r2.WithMaxRequestTimes(3),
+		r2.WithMaxRequestAttempts(3),
 	}
 	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		// do something
