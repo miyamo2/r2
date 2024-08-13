@@ -120,7 +120,7 @@ func TestPatchWithContextCancel(t *testing.T) {
 	}
 }
 
-func TestPatchWithMaxRequestTimes(t *testing.T) {
+func TestPatchWithMaxRequestAttempts(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -169,7 +169,7 @@ func TestPatchWithMaxRequestTimes(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -203,7 +203,7 @@ func TestPatchWithPeriod(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestTimes(2)) {
+	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
@@ -251,7 +251,7 @@ func TestPatchWithInterval(t *testing.T) {
 	defer cancel()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithInterval(time.Minute), r2.WithMaxRequestTimes(3)) {
+	for res, err := range r2.Patch(ctx, ts.URL, body, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}

@@ -34,7 +34,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -80,7 +80,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithTerminationCondition(func(res *http.Response) bool {
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminationCondition(func(res *http.Response) bool {
 					if xSomething, ok := res.Header["x-something"]; ok {
 						return len(xSomething) == 1 && xSomething[0] == "value"
 					}
@@ -137,7 +137,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -165,7 +165,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -193,7 +193,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(3), r2.WithPeriod(1 * time.Nanosecond)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -247,7 +247,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 		},
@@ -258,7 +258,7 @@ func TestPut(t *testing.T) {
 					return ctx
 				},
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2), r2.WithInterval(3 * time.Minute)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -291,7 +291,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(3)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -351,7 +351,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -397,7 +397,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -443,7 +443,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -489,7 +489,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -535,7 +535,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -563,7 +563,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -594,7 +594,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -627,7 +627,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -671,7 +671,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -715,7 +715,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -743,7 +743,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestTimes(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestAttempts(2)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -771,7 +771,7 @@ func TestPut(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestTimes(0)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
 				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
@@ -849,7 +849,7 @@ func TestPut(t *testing.T) {
 				url: "http://example.com",
 				options: []internal.Option{
 					internal.WithNewRequest(stubNewRequest),
-					r2.WithMaxRequestTimes(2),
+					r2.WithMaxRequestAttempts(2),
 					r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
 						req.Header.Set("x-something", "value")
 						res, err := do(req)

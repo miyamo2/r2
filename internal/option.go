@@ -87,7 +87,7 @@ func (p *R2Prop) Header() http.Header {
 	return p.header
 }
 
-// MaxRequestTimes returns the max request times. If the max request times is less than or equal to 0, it returns 0.
+// MaxRequestTimes returns the max request attempts. If the max request attempts is less than or equal to 0, it returns 0.
 func (p *R2Prop) MaxRequestTimes() int {
 	if p.maxRequestTimes <= 0 {
 		return 0

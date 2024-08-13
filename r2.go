@@ -73,7 +73,7 @@ const (
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -85,7 +85,7 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -97,7 +97,7 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -109,7 +109,7 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -122,7 +122,7 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -134,7 +134,7 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -146,7 +146,7 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 //   - request succeeded and no termination condition is specified by [WithTerminationCondition].
 //   - condition that specified in [WithTerminationCondition] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
-//   - maximum number of requests specified in [WithMaxRequestTimes] is reached.
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
 //
 // And during which time it continues to return [http.Response] and error.
@@ -175,9 +175,9 @@ func WithHeader(header http.Header) internal.Option {
 	}
 }
 
-// WithMaxRequestTimes sets the maximum number of requests.
+// WithMaxRequestAttempts sets the maximum number of requests.
 // If less than or equal to 0 is specified, maximum number of requests does not apply.
-func WithMaxRequestTimes(maxRequestTimes int) internal.Option {
+func WithMaxRequestAttempts(maxRequestTimes int) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetMaxRequestTimes(maxRequestTimes)
 	}
