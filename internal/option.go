@@ -11,8 +11,8 @@ type Option func(*R2Prop)
 // Aspect adding behavior to the pre-request/post-request.
 type Aspect func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error)
 
-// TerminationCondition specifies the termination condition of the iterator that references the response.
-type TerminationCondition func(res *http.Response) bool
+// TerminationCondition specifies the termination condition of the iterator that references the response and error.
+type TerminationCondition func(res *http.Response, err error) bool
 
 // R2Prop is the properties of r2.
 type R2Prop struct {

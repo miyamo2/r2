@@ -82,7 +82,7 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminationCondition(func(res *http.Response) bool {
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 					var gotBody map[string]interface{}
 					err := json.NewDecoder(res.Body).Decode(&gotBody)
 					if err != nil {

@@ -70,8 +70,8 @@ const (
 )
 
 // Head sends HTTP HEAD requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -82,8 +82,8 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 }
 
 // Get sends HTTP GET requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -94,8 +94,8 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 }
 
 // Post sends HTTP POST requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -106,8 +106,8 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 }
 
 // PostForm sends HTTP POST requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -119,8 +119,8 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 }
 
 // Put sends HTTP PUT requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -131,8 +131,8 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 }
 
 // Patch sends HTTP PATCH requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -143,8 +143,8 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 }
 
 // Delete sends HTTP DELETE requests until one of the following conditions is satisfied.
-//   - request succeeded and no termination condition is specified by [WithTerminationCondition].
-//   - condition that specified in [WithTerminationCondition] is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
@@ -200,8 +200,8 @@ func WithPeriod(period time.Duration) internal.Option {
 	}
 }
 
-// WithTerminationCondition sets the termination condition of the iterator that references the response.
-func WithTerminationCondition(terminationCondition TerminationCondition) internal.Option {
+// WithTerminateIf sets the termination condition of the iterator that references the response.
+func WithTerminateIf(terminationCondition TerminationCondition) internal.Option {
 	return func(p *internal.R2Prop) {
 		p.SetTerminationCondition(terminationCondition)
 	}
@@ -249,7 +249,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 
 			var terminateByResponseValue *bool
 			if cond := prop.TerminationCondition(); cond != nil {
-				terminateByResponseValue = checkTerminationConditionAreSatisfied(ctx, res, cond)
+				terminateByResponseValue = checkTerminationConditionAreSatisfied(ctx, res, err, cond)
 			}
 			if !yieldWithAutoClose(res, err, prop.AutoCloseResponseBody(), yield) {
 				return
@@ -389,10 +389,10 @@ func noopSeq(_ func(*http.Response, error) bool) {
 	// no-op
 }
 
-// checkTerminationConditionAreSatisfied returns whether the termination condition specified in `WithTerminationCondition` is satisfied.
+// checkTerminationConditionAreSatisfied returns whether the termination condition specified in `WithTerminateIf` is satisfied.
 //
 // The request body is closed after the check is completed.
-func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, cond TerminationCondition) *bool {
+func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Response, err error, cond TerminationCondition) *bool {
 	physicalResult := false
 	if res == nil {
 		return &physicalResult
@@ -414,12 +414,12 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 		TLS:              res.TLS,
 	}
 	if res.Body == nil {
-		physicalResult = cond(copiedRes)
+		physicalResult = cond(copiedRes, err)
 		return &physicalResult
 	}
 	if res.Body == http.NoBody {
 		copiedRes.Body = http.NoBody
-		physicalResult = cond(copiedRes)
+		physicalResult = cond(copiedRes, err)
 		return &physicalResult
 	}
 	buf := bytes.Buffer{}
@@ -429,7 +429,7 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 	b, err := io.ReadAll(tr)
 	if err != nil {
 		slog.Default().WarnContext(ctx, "[r2]: failed to read response body.", slog.Any("error", err))
-		physicalResult = cond(copiedRes)
+		physicalResult = cond(copiedRes, err)
 		return &physicalResult
 	}
 
@@ -438,7 +438,7 @@ func checkTerminationConditionAreSatisfied(ctx context.Context, res *http.Respon
 		io.Copy(io.Discard, copiedRes.Body)
 		copiedRes.Body.Close()
 	}()
-	physicalResult = cond(copiedRes)
+	physicalResult = cond(copiedRes, err)
 	return &physicalResult
 }
 

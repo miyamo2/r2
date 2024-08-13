@@ -81,7 +81,7 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithTerminationCondition(func(res *http.Response) bool {
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 					if xSomething, ok := res.Header["x-something"]; ok {
 						return len(xSomething) == 1 && xSomething[0] == "value"
 					}
