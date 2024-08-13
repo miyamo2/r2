@@ -568,9 +568,6 @@ func TestHead(t *testing.T) {
 					res: &Response499,
 					err: ErrTest,
 				},
-				{
-					err: r2.ErrTerminatedWithClientErrorResponse,
-				},
 			},
 		},
 		"client-returns-bad-request": {
@@ -596,9 +593,6 @@ func TestHead(t *testing.T) {
 			wants: []want{
 				{
 					res: &ResponseBadRequest,
-				},
-				{
-					err: r2.ErrTerminatedWithClientErrorResponse,
 				},
 			},
 		},
