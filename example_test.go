@@ -213,11 +213,11 @@ func ExampleWithPeriod() {
 	}
 }
 
-func ExampleWithTerminationCondition() {
+func ExampleWithTerminateIf() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
-		r2.WithTerminationCondition(func(res *http.Response) bool {
+		r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 			myHeader := res.Header.Get("X-My-Header")
 			return len(myHeader) > 0
 		}),

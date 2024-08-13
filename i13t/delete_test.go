@@ -257,7 +257,7 @@ func TestDeleteWithInterval(t *testing.T) {
 	}
 }
 
-func TestDeleteWithTerminationCondition(t *testing.T) {
+func TestDeleteWithTerminateIf(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -307,7 +307,7 @@ func TestDeleteWithTerminationCondition(t *testing.T) {
 
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
-		r2.WithTerminationCondition(func(res *http.Response) bool {
+		r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 			body := TestResponse{}
 			err := json.NewDecoder(res.Body).Decode(&body)
 			if err != nil {

@@ -287,8 +287,8 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 
 #### Termination Conditions
 
-- Request succeeded and no termination condition is specified by `WithTerminationCondition`.
-- Condition that specified in `WithTerminationCondition` is satisfied.
+- Request succeeded and no termination condition is specified by `WithTerminateIf`.
+- Condition that specified in `WithTerminateIf` is satisfied.
 - Response status code is a `4xx Client Error` other than `429: Too Many Request`.
 - Maximum number of requests specified in `WithMaxRequestAttempts` is reached.
 - Exceeds the deadline for the `context.Context` passed in the argument
@@ -298,17 +298,17 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 
 **r2** provides the following request options
 
-| Option                                                                                                  | Description                                                                                                                                                                                                               | Default              |
-|---------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
-| [`WithMaxRequestAttempts`](https://github.com/miyamo2/r2?tab=readme-ov-file#withmaxrequesttimes)        | The maximum number of requests to be performed.</br>If less than or equal to 0 is specified, maximum number of requests does not apply.                                                                                   | `0`                  |
-| [`WithPeriod`](https://github.com/miyamo2/r2?tab=readme-ov-file#withperiod)                             | The timeout period of the per request.</br>If less than or equal to 0 is specified, the timeout period does not apply. </br>If `http.Client.Timeout` is set, the shorter one is applied.                                  | `0`                  |
-| [`WithInterval`](https://github.com/miyamo2/r2?tab=readme-ov-file#withinterval)                         | The interval between next request.</br>By default, the interval is calculated by the exponential backoff and jitter.</br>If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header. | `0`                  |
-| [`WithTerminationCondition`](https://github.com/miyamo2/r2?tab=readme-ov-file#withterminationcondition) | The termination condition of the iterator that references the response.                                                                                                                                                   | `nil`                |
-| [`WithHttpClient`](https://github.com/miyamo2/r2?tab=readme-ov-file#withhttpclient)                     | The client to use for requests.                                                                                                                                                                                           | `http.DefaultClient` |
-| [`WithHeader`](https://github.com/miyamo2/r2?tab=readme-ov-file#withheader)                             | The custom http headers for the request.                                                                                                                                                                                  | `http.Header`(blank) |
-| [`WithContentType`](https://github.com/miyamo2/r2?tab=readme-ov-file#withcontenttype)                   | The 'Content-Type' for the request.                                                                                                                                                                                       | `''`                 |
-| [`WithAspect`](https://github.com/miyamo2/r2?tab=readme-ov-file#withaspect)                             | The behavior to the pre-request/post-request.                                                                                                                                                                             | -                    |
-| [`WithAutoCloseResponseBody`](https://github.com/miyamo2/r2?tab=readme-ov-file#withautocloseresponse)   | Whether the response body is automatically closed.</br>By default, this setting is enabled.                                                                                                                               | `true`               |
+| Option                                                                                                | Description                                                                                                                                                                                                               | Default              |
+|-------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|
+| [`WithMaxRequestAttempts`](https://github.com/miyamo2/r2?tab=readme-ov-file#withmaxrequesttimes)      | The maximum number of requests to be performed.</br>If less than or equal to 0 is specified, maximum number of requests does not apply.                                                                                   | `0`                  |
+| [`WithPeriod`](https://github.com/miyamo2/r2?tab=readme-ov-file#withperiod)                           | The timeout period of the per request.</br>If less than or equal to 0 is specified, the timeout period does not apply. </br>If `http.Client.Timeout` is set, the shorter one is applied.                                  | `0`                  |
+| [`WithInterval`](https://github.com/miyamo2/r2?tab=readme-ov-file#withinterval)                       | The interval between next request.</br>By default, the interval is calculated by the exponential backoff and jitter.</br>If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header. | `0`                  |
+| [`WithTerminateIf`](https://github.com/miyamo2/r2?tab=readme-ov-file#withterminateif)                 | The termination condition of the iterator that references the response.                                                                                                                                                   | `nil`                |
+| [`WithHttpClient`](https://github.com/miyamo2/r2?tab=readme-ov-file#withhttpclient)                   | The client to use for requests.                                                                                                                                                                                           | `http.DefaultClient` |
+| [`WithHeader`](https://github.com/miyamo2/r2?tab=readme-ov-file#withheader)                           | The custom http headers for the request.                                                                                                                                                                                  | `http.Header`(blank) |
+| [`WithContentType`](https://github.com/miyamo2/r2?tab=readme-ov-file#withcontenttype)                 | The 'Content-Type' for the request.                                                                                                                                                                                       | `''`                 |
+| [`WithAspect`](https://github.com/miyamo2/r2?tab=readme-ov-file#withaspect)                           | The behavior to the pre-request/post-request.                                                                                                                                                                             | -                    |
+| [`WithAutoCloseResponseBody`](https://github.com/miyamo2/r2?tab=readme-ov-file#withautocloseresponse) | Whether the response body is automatically closed.</br>By default, this setting is enabled.                                                                                                                               | `true`               |
 
 #### WithMaxRequestAttempts
 
@@ -349,13 +349,13 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 }
 ```
 
-#### WithTerminationCondition
+#### WithTerminateIf
 
 ```go
 ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 defer cancel()
 opts := []r2.Option{
-	r2.WithTerminationCondition(func(res *http.Response) bool {
+	r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 		myHeader := res.Header.Get("X-My-Header")
 		return len(myHeader) > 0
 	}),
