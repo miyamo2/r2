@@ -105,9 +105,6 @@ func TestPostWithContextCancel(t *testing.T) {
 				Header: http.Header{},
 			},
 		},
-		{
-			err: context.DeadlineExceeded,
-		},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)

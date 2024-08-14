@@ -280,7 +280,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 						dumpRes, _ := httputil.DumpResponse(res, true)
 						slog.Default().WarnContext(
 							ctx,
-							"[r2]: terminated with client error.",
+							"[r2]: interrupted with 4xx client error.",
 							slog.String("url", req.URL.String()),
 							slog.String("method", req.Method),
 							slog.String("response", string(dumpRes)))
@@ -301,7 +301,7 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 			}
 			select {
 			case <-ctx.Done():
-				yield(nil, ctx.Err())
+				slog.WarnContext(ctx, "[r2]: interrupted by context done.", slog.Any("error", ctx.Err()))
 				return
 			case <-time.After(wait):
 				// no-op
