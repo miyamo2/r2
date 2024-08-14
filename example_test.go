@@ -3,7 +3,6 @@ package r2_test
 import (
 	"bytes"
 	"context"
-	"errors"
 	"github.com/miyamo2/r2"
 	"io"
 	"log/slog"
@@ -13,18 +12,15 @@ import (
 )
 
 func Example() {
+	url := "http://example.com"
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	opts := []r2.Option{
 		r2.WithMaxRequestAttempts(3),
 		r2.WithPeriod(time.Second),
 	}
-	for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+	for res, err := range r2.Get(ctx, url, opts...) {
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				slog.ErrorContext(ctx, "deadline exceeded.", slog.Any("error", err))
-				break
-			}
 			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
 			continue
 		}
@@ -33,6 +29,7 @@ func Example() {
 			continue
 		}
 		if res.StatusCode != http.StatusOK {
+			slog.WarnContext(ctx, "unexpected status code.", slog.Int("expect", http.StatusOK), slog.Int("got", res.StatusCode))
 			continue
 		}
 
