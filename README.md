@@ -6,8 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/miyamo2/r2)](https://goreportcard.com/report/github.com/miyamo2/r2)
 [![GitHub License](https://img.shields.io/github/license/miyamo2/r2?&color=blue)](https://img.shields.io/github/license/miyamo2/r2?&color=blue)
 
-**r2** provides the ability to automatically iterate through Http requests with range over func.  
-You don't need to be aware of how requests are repeated; you can focus only on the business logic.
+**r2** provides the ability to automatically iterate through Http requests with range over func.
 
 ## Quick Start
 
