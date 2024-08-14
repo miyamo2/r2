@@ -432,8 +432,8 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 Set `GOEXPERIMENT` to `rangefunc` if Go version is 1.22.
 
 ```sh
-GOVER=$(go version)
-if [[ $GOVER == *"go1.22"* ]]; then
+GOVER=$(go mod graph)
+if [[ $GOVER == *"go@1.22"* ]]; then
   go env -w GOEXPERIMENT=rangefunc
 fi
 ```
