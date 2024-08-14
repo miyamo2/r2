@@ -1,7 +1,5 @@
 /*
 Package r2 provides the ability to automatically iterate through Http requests.
-
-You don't need to be aware of how requests are repeated; you can focus only on the business logic.
 */
 package r2
 
