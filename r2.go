@@ -69,7 +69,7 @@ const (
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -82,7 +82,7 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -95,7 +95,7 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Post(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -108,7 +108,7 @@ func Post(ctx context.Context, url string, body io.Reader, options ...internal.O
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func PostForm(ctx context.Context, url string, data url.Values, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -122,7 +122,7 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Put(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -135,7 +135,7 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Patch(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
@@ -148,7 +148,7 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 //   - response status code is a 4xx(client error) other than 429(Too Many Request).
 //   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
 //   - exceeds the deadline for the [context.Context] passed in the argument.
-//   - when the for range loop is interrupted by a break.
+//   - when the for range loop is interrupted by break.
 //
 // And during which time it continues to return [http.Response] and error.
 func Delete(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {

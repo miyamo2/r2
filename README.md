@@ -250,7 +250,7 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 - Response status code is a `4xx Client Error` other than `429: Too Many Request`.
 - Maximum number of requests specified in `WithMaxRequestAttempts` is reached.
 - Exceeds the deadline for the `context.Context` passed in the argument.
-- When the for range loop is interrupted by a break.
+- When the for range loop is interrupted by break.
 
 
 ### Options
