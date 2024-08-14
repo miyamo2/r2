@@ -20,6 +20,7 @@ jobs:
       matrix:
         goversion:
           - "1.22.0"
+          - "1.23.0"
           - "stable"
     steps:
       - uses: actions/checkout@v4
