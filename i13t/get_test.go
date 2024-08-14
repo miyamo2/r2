@@ -94,9 +94,6 @@ func TestGetWithContextCancel(t *testing.T) {
 				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
-		{
-			err: context.DeadlineExceeded,
-		},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)

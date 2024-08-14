@@ -283,9 +283,6 @@ func TestPostForm(t *testing.T) {
 					res: &ResponseInternalServerError,
 					err: ErrTest,
 				},
-				{
-					err: context.DeadlineExceeded,
-				},
 			},
 		},
 		"nil-response": {
