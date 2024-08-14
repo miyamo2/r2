@@ -30,13 +30,14 @@ go env -w GOEXPERIMENT=rangefunc
 ### Simple Usage
 
 ```go
+url := "http://example.com"
 ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 defer cancel()
 opts := []r2.Option{
 	r2.WithMaxRequestAttempts(3),
 	r2.WithPeriod(time.Second),
 }
-for res, err := range r2.Get(ctx, "https://example.com", opts...) {
+for res, err := range r2.Get(ctx, url, opts...) {
 	if err != nil {
 		slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
 		continue
@@ -46,6 +47,7 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 		continue
 	}
 	if res.StatusCode != http.StatusOK {
+		slog.WarnContext(ctx, "unexpected status code.", slog.Int("expect", http.StatusOK), slog.Int("got", res.StatusCode))
 		continue
 	}
 
@@ -60,99 +62,64 @@ for res, err := range r2.Get(ctx, "https://example.com", opts...) {
 ```
 
 <details>
-    <summary>If without miyamo2/r2</summary>
+    <summary>vs 'github.com/avast/retry-go'</summary>
 
 ```go
-type requestResult struct {
-    res *http.Response
-    err error
-}
+url := "http://example.com"
+var buf []byte
 
 ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 defer cancel()
 
-doReq := func(ctx context.Context, url string, timeout time.Duration) requestResult {
-	ctx, cancelReq := context.WithTimeout(ctx, timeout)
-	defer cancelReq()
-
-	resultCh := make(chan requestResult, 1)
-	defer close(resultCh)
-	go func() {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-		if err != nil {
-			resultCh <- requestResult{
-				res: nil,
-				err: err,
-			}
-		}
-		res, err := http.DefaultClient.Do(req)
-		resultCh <- requestResult{
-			res: res,
-			err: err,
-		}
-	}()
-
-	select {
-	case <-ctx.Done():
-		return requestResult{
-			nil,
-			ctx.Err(),
-		}
-	case result := <-resultCh:
-		return result
-	}
+opts := []retry.Option{
+	retry.Attempts(3),
+	retry.Context(ctx),
 }
 
-maxRequestTimes := 3
-resultCh := make(chan requestResult)
-terminated := make(chan struct{})
-go func() {
-	for i := 0; i < maxRequestTimes; i++ {
-		select {
-		case <-terminated:
-			close(resultCh)
-			return
-		}
-		result := doReq(ctx, "https://example.com", time.Second)
-		resultCh <- result
-	}
-}()
+// In r2, the timeout period per request can be specified with the `WithPeriod` option.
+client := http.Client{
+	Timeout: time.Second,
+}
 
-for {
-	select {
-	case <-ctx.Done():
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			slog.ErrorContext(ctx, "deadline exceeded.", slog.Any("error", ctx.Err()))
-		}
-		break
-	case result := <-resultCh:
-		err := result.err
+err := retry.Do(
+	func() error {
+		res, err := client.Get(url)
 		if err != nil {
-			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
-			continue
+			return err
 		}
-		res := result.res
 		if res == nil {
-			slog.WarnContext(ctx, "response is nil")
-			continue
+			return fmt.Errorf("response is nil")
 		}
-		if res.StatusCode != http.StatusOK {
-			io.Copy(io.Discard, res.Body)
-			res.Body.Close()
-			continue
+		if res.StatusCode >= http.StatusBadRequest && res.StatusCode < http.StatusInternalServerError {
+			// In r2, client errors other than TooManyRequest are excluded from retries by default.
+			return nil
+		}
+		if res.StatusCode >= http.StatusInternalServerError {
+			// In r2, automatically retry if the server error response is returned by default.
+			return fmt.Error("5xx: server error response")
 		}
 
-		buf, err := io.ReadAll(res.Body)
-		res.Body.Close()
+		if res.StatusCode != http.StatusOK {
+			return fmt.Errorf("unexpected status code: expected %d, got %d", http.StatusOK, res.StatusCode)
+		}
+
+		// In r2, the response body is automatically closed by default.
+		defer res.Body.Close()
+		buf, err = io.ReadAll(res.Body)
 		if err != nil {
 			slog.ErrorContext(ctx, "failed to read response body.", slog.Any("error", err))
-			continue
+			return err
 		}
-		slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
-	}
+		return nil
+	},
+	opts...,
+)
+
+if err != nil {
+	// handle error
 }
 
-close(terminated)
+slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
 ```
 </details>
 
@@ -283,7 +250,8 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 - Condition that specified in `WithTerminateIf` is satisfied.
 - Response status code is a `4xx Client Error` other than `429: Too Many Request`.
 - Maximum number of requests specified in `WithMaxRequestAttempts` is reached.
-- Exceeds the deadline for the `context.Context` passed in the argument
+- Exceeds the deadline for the `context.Context` passed in the argument.
+- When the for range loop is interrupted by a break.
 
 
 ### Options
