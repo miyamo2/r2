@@ -1,3 +1,17 @@
+## 0.2.0 - 2024-08-14
+
+### 💥Breaking Changes
+
+- Renamed `WithMaxRequestTimes` to `WithMaxRequestAttempts`
+- Added `WithTerminateIf` as a replacement for `WithTerminationCondition`
+- `ErrTerminatedWithClientErrorResponse` is no longer supported
+- When iterator interruption with response status code 4xx no longer yield an error
+- An error caused by canceling a context is now not yielded
+
+### 📚Documentation
+
+- Explicitly stated that requests are terminated when the for loop is interrupted by break
+
 ## 0.1.1 - 2024-08-11
 
 ### 📚Documentation
