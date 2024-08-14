@@ -6,7 +6,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/miyamo2/r2)](https://goreportcard.com/report/github.com/miyamo2/r2)
 [![GitHub License](https://img.shields.io/github/license/miyamo2/r2?&color=blue)](https://img.shields.io/github/license/miyamo2/r2?&color=blue)
 
-**r2** provides the ability to automatically iterate through Http requests with range over func.
+**r2** is a proof of concept for the Go 1.22 range functions and provides a simple and easy-to-use interface for sending HTTP requests with retries.
 
 ## Quick Start
 
