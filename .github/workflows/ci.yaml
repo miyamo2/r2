@@ -23,6 +23,8 @@ jobs:
           - "1.23.0"
           - "stable"
     steps:
+      - uses: Kesin11/actions-timeline@v2
+
       - uses: actions/checkout@v4
 
       - name: Setup Go
