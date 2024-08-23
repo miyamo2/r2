@@ -16,7 +16,6 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -264,8 +263,8 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 					if retryAfter == "" {
 						break
 					}
-					atoi, err := strconv.Atoi(retryAfter)
-					if err != nil {
+					if wait, err = time.ParseDuration(retryAfter); err != nil {
+						// If err is not nil, wait is surely assigned 0.
 						slog.Default().WarnContext(
 							ctx,
 							"[r2]: server returned an invalid 'retry-after'.",
@@ -274,7 +273,6 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 							slog.Any("error", err))
 						break
 					}
-					wait = time.Duration(atoi)
 				default:
 					if res.StatusCode >= http.StatusBadRequest && res.StatusCode < http.StatusInternalServerError {
 						dumpRes, _ := httputil.DumpResponse(res, true)
