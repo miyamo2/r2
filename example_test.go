@@ -22,6 +22,8 @@ func Example() {
 	for res, err := range r2.Get(ctx, url, opts...) {
 		if err != nil {
 			slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
+			// Note: Even if continue is used, the iterator could be terminated.
+			// Likewise, if break is used, the request could be re-executed in the background once more.
 			continue
 		}
 		if res == nil {

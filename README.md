@@ -39,6 +39,8 @@ opts := []r2.Option{
 for res, err := range r2.Get(ctx, url, opts...) {
 	if err != nil {
 		slog.WarnContext(ctx, "something happened.", slog.Any("error", err))
+		// Note: Even if continue is used, the iterator could be terminated.
+		// Likewise, if break is used, the request could be re-executed in the background once more.
 		continue
 	}
 	if res == nil {
@@ -70,9 +72,28 @@ var buf []byte
 ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 defer cancel()
 
+type ErrTooManyRequests struct{
+	error
+	RetryAfter time.Duration
+}
+
 opts := []retry.Option{
 	retry.Attempts(3),
 	retry.Context(ctx),
+	// In r2, the delay is calculated with the backoff and jitter by default. 
+	// And, if 429 Too Many Requests are returned, the delay is set based on the Retry-After.
+	retry.DelayType(
+		func(n uint, err error, config *Config) time.Duration {
+			if err != nil {
+				var errTooManyRequests ErrTooManyRequests
+				if errors.As(err, &ErrTooManyRequests) {
+					if ErrTooManyRequests.RetryAfter != 0 {
+						return ErrTooManyRequests.RetryAfter
+					}
+				}
+			}
+			return retry.BackOffDelay(n, err, config)
+		}),
 }
 
 // In r2, the timeout period per request can be specified with the `WithPeriod` option.
@@ -87,10 +108,21 @@ err := retry.Do(
 			return err
 		}
 		if res == nil {
-			return fmt.Errorf("response is nil")
+			return fmt.Error("response is nil")
+		}
+		if res.StatusCode == http.StatusTooManyRequests {
+			retryAfter := res.Header.Get("Retry-After")
+			if retryAfter != "" {
+				retryAfterDuration, err := time.ParseDuration(retryAfter)
+				if err != nil {
+					return &ErrTooManyRequests{error: fmt.Errorf("429: too many requests")}
+				}
+				return &ErrTooManyRequests{error: fmt.Errorf("429: too many requests"), RetryAfter: retryAfterDuration}
+			}
+			return &ErrTooManyRequests{error: fmt.Errorf("429: too many requests")}
 		}
 		if res.StatusCode >= http.StatusBadRequest && res.StatusCode < http.StatusInternalServerError {
-			// In r2, client errors other than TooManyRequest are excluded from retries by default.
+			// In r2, client errors other than TooManyRequests are excluded from retries by default.
 			return nil
 		}
 		if res.StatusCode >= http.StatusInternalServerError {
