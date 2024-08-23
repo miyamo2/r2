@@ -108,7 +108,7 @@ err := retry.Do(
 			return err
 		}
 		if res == nil {
-			return fmt.Error("response is nil")
+			return fmt.Errorf("response is nil")
 		}
 		if res.StatusCode == http.StatusTooManyRequests {
 			retryAfter := res.Header.Get("Retry-After")
@@ -127,7 +127,7 @@ err := retry.Do(
 		}
 		if res.StatusCode >= http.StatusInternalServerError {
 			// In r2, automatically retry if the server error response is returned by default.
-			return fmt.Error("5xx: server error response")
+			return fmt.Errorf("5xx: server error response")
 		}
 
 		if res.StatusCode != http.StatusOK {
