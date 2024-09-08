@@ -1,4 +1,4 @@
-//go:generate mockgen -source=$GOFILE -destination=../u6t/mock_$GOFILE -package=u6t
+//go:generate mockgen -source=$GOFILE -destination=../tests/unit/mock_$GOFILE -package=unit
 package internal
 
 import (
