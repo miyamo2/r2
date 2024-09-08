@@ -1,3 +1,11 @@
+## 0.3.0 - 2024-09-08
+
+### ✨New Features
+
+#### `Do`
+
+Send HTTP requests with the given method until the termination condition is satisfied.
+
 ## 0.2.0 - 2024-08-14
 
 ### 💥Breaking Changes
