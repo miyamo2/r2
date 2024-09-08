@@ -1,20 +1,25 @@
-package u6t
+package unit
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/miyamo2/r2"
 	"github.com/miyamo2/r2/internal"
 	"go.uber.org/mock/gomock"
+	"io"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 )
 
-func TestGet(t *testing.T) {
+func TestDelete(t *testing.T) {
 	type param struct {
 		ctx     func() context.Context
 		url     string
+		body    io.Reader
 		options []internal.Option
 	}
 	type want struct {
@@ -31,14 +36,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -51,7 +58,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -74,25 +82,38 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
-					if xSomething, ok := res.Header["x-something"]; ok {
-						return len(xSomething) == 1 && xSomething[0] == "value"
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
+					var gotBody map[string]interface{}
+					err := json.NewDecoder(res.Body).Decode(&gotBody)
+					if err != nil {
+						return false
 					}
-					return false
+					numStr, ok := gotBody["num"]
+					if !ok {
+						return false
+					}
+					num, err := strconv.Atoi(numStr.(string))
+					if err != nil {
+						return false
+					}
+					return num == 1
 				})},
+				body: bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
+							Body:       http.NoBody,
 						},
 					},
 				},
@@ -100,26 +121,30 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
-							Header:     http.Header{"x-something": []string{"value"}},
+							Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
 						},
 					},
 				},
 			},
 			wants: []want{
 				{
-					res: &ResponseOK,
+					res: &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       http.NoBody,
+					},
 				},
 				{
 					res: &http.Response{
 						StatusCode: http.StatusOK,
-						Header:     http.Header{"x-something": []string{"value"}},
+						Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
 					},
 				},
 			},
@@ -128,14 +153,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{"x-something": []string{"value"}},
 						},
 					},
@@ -154,15 +181,17 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3), r2.WithContentType(r2.ContentTypeApplicationJSON)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
-							Header: http.Header{},
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationJSON}},
 						},
 					},
 					result: clientResult{
@@ -180,14 +209,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -197,7 +228,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -207,7 +239,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -230,7 +263,8 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(1)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 		},
 		"context-cancel": {
@@ -240,14 +274,16 @@ func TestGet(t *testing.T) {
 					return ctx
 				},
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -268,14 +304,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -287,7 +325,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -299,7 +338,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -324,14 +364,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -344,7 +386,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -367,14 +410,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -387,7 +432,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -410,14 +456,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -430,7 +478,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -453,14 +502,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -473,7 +524,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -496,14 +548,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -522,14 +576,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -548,14 +604,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -572,18 +630,20 @@ func TestGet(t *testing.T) {
 				},
 			},
 		},
-		"with-zero-max-request-times": {
+		"with-nobody": {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   http.NoBody,
 							Header: http.Header{},
 						},
 					},
@@ -595,7 +655,39 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   http.NoBody,
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						res: &ResponseOK,
+					},
+				},
+			},
+			wants: []want{
+				{
+					err: ErrTest,
+				},
+				{
+					res: &ResponseOK,
+				},
+			},
+		},
+		"with-valid-body-without-get-body": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -607,7 +699,95 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						res: &ResponseOK,
+					},
+				},
+			},
+			wants: []want{
+				{
+					err: ErrTest,
+				},
+				{
+					res: &ResponseOK,
+				},
+			},
+		},
+		"with-invalid-body": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   &invalidReadCloser{},
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						err: ErrTest,
+					},
+				},
+			},
+			wants: []want{
+				{
+					err: ErrTest,
+				},
+			},
+		},
+		"with-invalid-get-body": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestAttempts(2)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						err: ErrTest,
+					},
+				},
+			},
+			wants: []want{
+				{
+					err: ErrTest,
+				},
+			},
+		},
+		"with-zero-max-request-times": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -619,7 +799,34 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						err: ErrTest,
+					},
+				},
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						err: ErrTest,
+					},
+				},
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -665,7 +872,7 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
 							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
@@ -677,7 +884,7 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
 							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
@@ -703,14 +910,16 @@ func TestGet(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithAutoCloseResponseBody(false)},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithAutoCloseResponseBody(false)},
+				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -723,7 +932,8 @@ func TestGet(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodGet,
+							Method: http.MethodDelete,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
 							Header: http.Header{},
 						},
 					},
@@ -763,7 +973,7 @@ func TestGet(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.Get(tt.param.ctx(), tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.Delete(tt.param.ctx(), tt.param.url, tt.param.body, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}

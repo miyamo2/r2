@@ -1,4 +1,4 @@
-package i13t
+package integration
 
 import (
 	"bytes"

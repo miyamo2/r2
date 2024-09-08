@@ -1,4 +1,4 @@
-package u6t
+package unit
 
 import (
 	"bytes"
@@ -13,8 +13,9 @@ import (
 	"time"
 )
 
-func TestPost(t *testing.T) {
+func TestDo(t *testing.T) {
 	type param struct {
+		method  string
 		ctx     func() context.Context
 		url     string
 		body    io.Reader
@@ -32,6 +33,7 @@ func TestPost(t *testing.T) {
 	tests := map[string]test{
 		"most-commonly": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -78,8 +80,9 @@ func TestPost(t *testing.T) {
 		},
 		"with-termination-condition": {
 			param: param{
-				ctx: context.Background,
-				url: "http://example.com",
+				method: http.MethodPost,
+				ctx:    context.Background,
+				url:    "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 					if xSomething, ok := res.Header["x-something"]; ok {
 						return len(xSomething) == 1 && xSomething[0] == "value"
@@ -135,6 +138,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-header": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
@@ -163,6 +167,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-content-type": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
@@ -191,6 +196,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-period": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
@@ -245,6 +251,7 @@ func TestPost(t *testing.T) {
 		},
 		"new-request-returns-error": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(2)},
@@ -253,6 +260,7 @@ func TestPost(t *testing.T) {
 		},
 		"context-cancel": {
 			param: param{
+				method: http.MethodPost,
 				ctx: func() context.Context {
 					ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
 					return ctx
@@ -286,6 +294,7 @@ func TestPost(t *testing.T) {
 		},
 		"nil-response": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3)},
@@ -346,6 +355,7 @@ func TestPost(t *testing.T) {
 		},
 		"too-many-request": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -392,6 +402,7 @@ func TestPost(t *testing.T) {
 		},
 		"too-many-request-without-retry-after": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -438,6 +449,7 @@ func TestPost(t *testing.T) {
 		},
 		"too-many-request-with-invalid-retry-after": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -484,6 +496,7 @@ func TestPost(t *testing.T) {
 		},
 		"client-returns-not-implemented": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -530,6 +543,7 @@ func TestPost(t *testing.T) {
 		},
 		"client-returns-399": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -558,6 +572,7 @@ func TestPost(t *testing.T) {
 		},
 		"client-returns-bad-request": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -586,6 +601,7 @@ func TestPost(t *testing.T) {
 		},
 		"client-returns-499": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
@@ -616,6 +632,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-nobody": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestAttempts(2)},
@@ -660,6 +677,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-valid-body-without-get-body": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestAttempts(2)},
@@ -704,6 +722,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-invalid-body": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestAttempts(2)},
@@ -732,6 +751,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-invalid-get-body": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestAttempts(2)},
@@ -760,6 +780,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-zero-max-request-times": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
@@ -836,8 +857,9 @@ func TestPost(t *testing.T) {
 		},
 		"with-aspect": {
 			param: param{
-				ctx: context.Background,
-				url: "http://example.com",
+				method: http.MethodPost,
+				ctx:    context.Background,
+				url:    "http://example.com",
 				options: []internal.Option{
 					internal.WithNewRequest(stubNewRequest),
 					r2.WithMaxRequestAttempts(2),
@@ -892,6 +914,7 @@ func TestPost(t *testing.T) {
 		},
 		"with-auto-close-response-disable": {
 			param: param{
+				method:  http.MethodPost,
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithAutoCloseResponseBody(false)},
@@ -957,7 +980,7 @@ func TestPost(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.Post(tt.param.ctx(), tt.param.url, tt.param.body, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.Do(tt.param.ctx(), tt.param.url, tt.param.method, tt.param.body, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}

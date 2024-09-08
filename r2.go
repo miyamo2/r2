@@ -72,7 +72,7 @@ const (
 //
 // And during which time it continues to return [http.Response] and error.
 func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodHead, nil, options...)
+	return Do(ctx, url, http.MethodHead, nil, options...)
 }
 
 // Get sends HTTP GET requests until one of the following conditions is satisfied.
@@ -85,7 +85,7 @@ func Head(ctx context.Context, url string, options ...internal.Option) iter.Seq2
 //
 // And during which time it continues to return [http.Response] and error.
 func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodGet, nil, options...)
+	return Do(ctx, url, http.MethodGet, nil, options...)
 }
 
 // Post sends HTTP POST requests until one of the following conditions is satisfied.
@@ -98,7 +98,7 @@ func Get(ctx context.Context, url string, options ...internal.Option) iter.Seq2[
 //
 // And during which time it continues to return [http.Response] and error.
 func Post(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodPost, body, options...)
+	return Do(ctx, url, http.MethodPost, body, options...)
 }
 
 // PostForm sends HTTP POST requests until one of the following conditions is satisfied.
@@ -125,7 +125,7 @@ func PostForm(ctx context.Context, url string, data url.Values, options ...inter
 //
 // And during which time it continues to return [http.Response] and error.
 func Put(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodPut, body, options...)
+	return Do(ctx, url, http.MethodPut, body, options...)
 }
 
 // Patch sends HTTP PATCH requests until one of the following conditions is satisfied.
@@ -138,7 +138,7 @@ func Put(ctx context.Context, url string, body io.Reader, options ...internal.Op
 //
 // And during which time it continues to return [http.Response] and error.
 func Patch(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodPatch, body, options...)
+	return Do(ctx, url, http.MethodPatch, body, options...)
 }
 
 // Delete sends HTTP DELETE requests until one of the following conditions is satisfied.
@@ -151,78 +151,19 @@ func Patch(ctx context.Context, url string, body io.Reader, options ...internal.
 //
 // And during which time it continues to return [http.Response] and error.
 func Delete(ctx context.Context, url string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
-	return responseSeq(ctx, url, http.MethodDelete, body, options...)
+	return Do(ctx, url, http.MethodDelete, body, options...)
 }
 
-// WithHttpClient sets a custom HTTP client for the request.
-func WithHttpClient(client HttpClient) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetClient(client)
-	}
-}
-
-// WithContentType sets the content type for the request header.
-func WithContentType(contentType string) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetContentType(contentType)
-	}
-}
-
-// WithHeader sets custom http headers for the request.
-func WithHeader(header http.Header) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetHeader(header)
-	}
-}
-
-// WithMaxRequestAttempts sets the maximum number of requests.
-// If less than or equal to 0 is specified, maximum number of requests does not apply.
-func WithMaxRequestAttempts(maxRequestTimes int) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetMaxRequestTimes(maxRequestTimes)
-	}
-}
-
-// WithInterval sets the interval between next request.
-// By default, the interval is calculated by the exponential backoff and jitter.
-// If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header.
-func WithInterval(interval time.Duration) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetInterval(interval)
-	}
-}
-
-// WithPeriod sets the timeout period for the per request.
-// If less than or equal to 0 is specified, the timeout period does not apply.
-func WithPeriod(period time.Duration) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetPeriod(period)
-	}
-}
-
-// WithTerminateIf sets the termination condition of the iterator that references the response.
-func WithTerminateIf(terminationCondition TerminationCondition) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetTerminationCondition(terminationCondition)
-	}
-}
-
-// WithAspect sets the behavior to the pre-request/post-request.
-func WithAspect(aspect Aspect) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetAspect(aspect)
-	}
-}
-
-// WithAutoCloseResponseBody sets whether the response body is automatically closed. By default, this setting is enabled.
-func WithAutoCloseResponseBody(autoCloseResponseBody bool) internal.Option {
-	return func(p *internal.R2Prop) {
-		p.SetAutoCloseResponseBody(autoCloseResponseBody)
-	}
-}
-
-// responseSeq returns a sequence of [http.Response] and error.
-func responseSeq(ctx context.Context, url, method string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
+// Do send HTTP requests until one of the following conditions is satisfied.
+//   - request succeeded and no termination condition is specified by [WithTerminateIf].
+//   - condition that specified in [WithTerminateIf] is satisfied.
+//   - response status code is a 4xx(client error) other than 429(Too Many Request).
+//   - maximum number of requests specified in [WithMaxRequestAttempts] is reached.
+//   - exceeds the deadline for the [context.Context] passed in the argument.
+//   - when the for range loop is interrupted by break.
+//
+// And during which time it continues to return [http.Response] and error.
+func Do(ctx context.Context, url, method string, body io.Reader, options ...internal.Option) iter.Seq2[*http.Response, error] {
 	prop := internal.NewR2Prop(options...)
 	client := prop.Client()
 	req, err := prop.NewRequestFunc()(method, url, body)
@@ -315,6 +256,73 @@ func responseSeq(ctx context.Context, url, method string, body io.Reader, option
 				return
 			}
 		}
+	}
+}
+
+// WithHttpClient sets a custom HTTP client for the request.
+func WithHttpClient(client HttpClient) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetClient(client)
+	}
+}
+
+// WithContentType sets the content type for the request header.
+func WithContentType(contentType string) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetContentType(contentType)
+	}
+}
+
+// WithHeader sets custom http headers for the request.
+func WithHeader(header http.Header) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetHeader(header)
+	}
+}
+
+// WithMaxRequestAttempts sets the maximum number of requests.
+// If less than or equal to 0 is specified, maximum number of requests does not apply.
+func WithMaxRequestAttempts(maxRequestTimes int) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetMaxRequestTimes(maxRequestTimes)
+	}
+}
+
+// WithInterval sets the interval between next request.
+// By default, the interval is calculated by the exponential backoff and jitter.
+// If response status code is 429(Too Many Request), the interval conforms to 'Retry-After' header.
+func WithInterval(interval time.Duration) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetInterval(interval)
+	}
+}
+
+// WithPeriod sets the timeout period for the per request.
+// If less than or equal to 0 is specified, the timeout period does not apply.
+func WithPeriod(period time.Duration) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetPeriod(period)
+	}
+}
+
+// WithTerminateIf sets the termination condition of the iterator that references the response.
+func WithTerminateIf(terminationCondition TerminationCondition) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetTerminationCondition(terminationCondition)
+	}
+}
+
+// WithAspect sets the behavior to the pre-request/post-request.
+func WithAspect(aspect Aspect) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetAspect(aspect)
+	}
+}
+
+// WithAutoCloseResponseBody sets whether the response body is automatically closed. By default, this setting is enabled.
+func WithAutoCloseResponseBody(autoCloseResponseBody bool) internal.Option {
+	return func(p *internal.R2Prop) {
+		p.SetAutoCloseResponseBody(autoCloseResponseBody)
 	}
 }
 

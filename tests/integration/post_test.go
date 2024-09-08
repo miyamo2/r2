@@ -1,4 +1,4 @@
-package i13t
+package integration
 
 import (
 	"bytes"
@@ -10,30 +10,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strconv"
 	"testing"
 	"time"
 )
 
-func TestPostForm(t *testing.T) {
+func TestPost(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -74,31 +65,23 @@ func TestPostForm(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithContextCancel(t *testing.T) {
+func TestPostWithContextCancel(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -127,32 +110,24 @@ func TestPostFormWithContextCancel(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithInterval(3*time.Minute)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithInterval(3*time.Minute)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithMaxRequestAttempts(t *testing.T) {
+func TestPostWithMaxRequestAttempts(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 2:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -190,27 +165,21 @@ func TestPostFormWithMaxRequestAttempts(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithMaxRequestAttempts(2)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithPeriod(t *testing.T) {
+func TestPostWithPeriod(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(30 * time.Millisecond)
-		err := r.ParseForm()
-		if err != nil {
-			t.Fatal(err)
-		}
+		testReq := RequestFromBuffer(r.Body)
 		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 		w.WriteHeader(http.StatusOK)
 
-		numStr := r.Form.Get("num")
-		num, err := strconv.Atoi(numStr)
-
-		res := TestResponse{Num: num}
+		res := TestResponse{Num: testReq.Num}
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			t.Fatal(err)
 		}
@@ -230,31 +199,23 @@ func TestPostFormWithPeriod(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithInterval(t *testing.T) {
+func TestPostWithInterval(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -286,14 +247,14 @@ func TestPostFormWithInterval(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
 	defer cancel()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithTerminateIf(t *testing.T) {
+func TestPostWithTerminateIf(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -356,36 +317,28 @@ func TestPostFormWithTerminateIf(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, opts...) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, opts...) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithContentType(t *testing.T) {
+func TestPostWithContentType(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") == r2.ContentTypeApplicationJSON {
+		if r.Header.Get("Content-Type") != r2.ContentTypeApplicationJSON {
 			t.Errorf("unexpected Content-Type: %s", r.Header.Get("Content-Type"))
 			return
 		}
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -427,14 +380,14 @@ func TestPostFormWithContentType(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithHeader(t *testing.T) {
+func TestPostWithHeader(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -444,19 +397,11 @@ func TestPostFormWithHeader(t *testing.T) {
 		}
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -497,14 +442,14 @@ func TestPostFormWithHeader(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithAspect(t *testing.T) {
+func TestPostWithAspect(t *testing.T) {
 	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		testReq := RequestFromBuffer(r.Body)
@@ -538,52 +483,29 @@ func TestPostFormWithAspect(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
-		err := req.ParseForm()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		numStr := req.Form.Get("num")
-		num, err := strconv.Atoi(numStr)
-		if err != nil {
-			return nil, err
-		}
-		req.PostForm = nil
-		req.Form = nil
-		testReq := TestRequest{Num: num + 1}
-		newReq, err := http.NewRequestWithContext(req.Context(), req.Method, req.URL.String(), io.NopCloser(testReq.Encode()))
-		if err != nil {
-			return nil, err
-		}
-		newReq.Header.Set("Content-Type", r2.ContentTypeApplicationJSON)
-		return do(newReq)
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+		testReq := RequestFromBuffer(req.Body)
+		testReq.Num += 1
+		req.Body = io.NopCloser(testReq.Encode())
+		return do(req)
 	})) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostFormWithAutoCloseResponseBody(t *testing.T) {
+func TestPostWithAutoCloseResponseBody(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
-			err := r.ParseForm()
-			if err != nil {
-				t.Fatal(err)
-			}
+			testReq := RequestFromBuffer(r.Body)
 			w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 			w.WriteHeader(http.StatusOK)
 
-			numStr := r.Form.Get("num")
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			res := TestResponse{Num: num}
+			res := TestResponse{Num: testReq.Num}
 			if err := json.NewEncoder(w).Encode(res); err != nil {
 				t.Fatal(err)
 			}
@@ -624,8 +546,8 @@ func TestPostFormWithAutoCloseResponseBody(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	form := url.Values{"num": []string{"0"}}
-	for res, err := range r2.PostForm(ctx, ts.URL, form, r2.WithAutoCloseResponseBody(false)) {
+	body := TestRequest{Num: 0}.Encode()
+	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithAutoCloseResponseBody(false)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		if resBody := res.Body; resBody != nil {
 			if err := res.Body.Close(); err != nil {
