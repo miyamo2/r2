@@ -1,4 +1,4 @@
-package u6t
+package unit
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestHead(t *testing.T) {
+func TestGet(t *testing.T) {
 	type param struct {
 		ctx     func() context.Context
 		url     string
@@ -38,7 +38,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -51,13 +51,12 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
-						err: nil,
 					},
 				},
 			},
@@ -68,7 +67,6 @@ func TestHead(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
-					err: nil,
 				},
 			},
 		},
@@ -88,7 +86,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -102,7 +100,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -137,7 +135,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{"x-something": []string{"value"}},
 						},
 					},
@@ -163,7 +161,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -189,7 +187,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -199,7 +197,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -209,7 +207,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -218,14 +216,12 @@ func TestHead(t *testing.T) {
 			},
 			wants: []want{
 				{
-					res: nil,
 					err: context.DeadlineExceeded,
 				},
 				{
-					res: nil,
 					err: context.DeadlineExceeded,
-				}, {
-					res: nil,
+				},
+				{
 					err: context.DeadlineExceeded,
 				},
 			},
@@ -251,7 +247,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -266,10 +262,6 @@ func TestHead(t *testing.T) {
 					res: &ResponseInternalServerError,
 					err: ErrTest,
 				},
-				{
-					res: nil,
-					err: context.DeadlineExceeded,
-				},
 			},
 		},
 		"nil-response": {
@@ -283,12 +275,11 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
-						res: nil,
 						err: ErrTest,
 					},
 				},
@@ -296,12 +287,11 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
-						res: nil,
 						err: ErrTest,
 					},
 				},
@@ -309,27 +299,23 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
-						res: nil,
 						err: ErrTest,
 					},
 				},
 			},
 			wants: []want{
 				{
-					res: nil,
 					err: ErrTest,
 				},
 				{
-					res: nil,
 					err: ErrTest,
 				},
 				{
-					res: nil,
 					err: ErrTest,
 				},
 			},
@@ -345,7 +331,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -358,13 +344,12 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
-						err: nil,
 					},
 				},
 			},
@@ -375,7 +360,6 @@ func TestHead(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
-					err: nil,
 				},
 			},
 		},
@@ -390,7 +374,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -403,13 +387,12 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
-						err: nil,
 					},
 				},
 			},
@@ -420,7 +403,6 @@ func TestHead(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
-					err: nil,
 				},
 			},
 		},
@@ -435,7 +417,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -448,13 +430,12 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
-						err: nil,
 					},
 				},
 			},
@@ -465,7 +446,6 @@ func TestHead(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
-					err: nil,
 				},
 			},
 		},
@@ -480,7 +460,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -493,13 +473,12 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
-						err: nil,
 					},
 				},
 			},
@@ -510,7 +489,6 @@ func TestHead(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
-					err: nil,
 				},
 			},
 		},
@@ -525,20 +503,44 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &Response399,
-						err: nil,
 					},
 				},
 			},
 			wants: []want{
 				{
 					res: &Response399,
-					err: nil,
+				},
+			},
+		},
+		"client-returns-bad-request": {
+			param: param{
+				ctx:     context.Background,
+				url:     "http://example.com",
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
+			},
+			clientParamResultPairs: []clientParamResultPair{
+				{
+					param: clientParam{
+						req: &http.Request{
+							URL:    HelperMustURLParse("http://example.com"),
+							Method: http.MethodGet,
+							Header: http.Header{},
+						},
+					},
+					result: clientResult{
+						res: &ResponseBadRequest,
+					},
+				},
+			},
+			wants: []want{
+				{
+					res: &ResponseBadRequest,
 				},
 			},
 		},
@@ -553,7 +555,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -570,32 +572,6 @@ func TestHead(t *testing.T) {
 				},
 			},
 		},
-		"client-returns-bad-request": {
-			param: param{
-				ctx:     context.Background,
-				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
-			},
-			clientParamResultPairs: []clientParamResultPair{
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
-							Header: http.Header{},
-						},
-					},
-					result: clientResult{
-						res: &ResponseBadRequest,
-					},
-				},
-			},
-			wants: []want{
-				{
-					res: &ResponseBadRequest,
-				},
-			},
-		},
 		"with-zero-max-request-times": {
 			param: param{
 				ctx:     context.Background,
@@ -607,7 +583,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -619,7 +595,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -631,7 +607,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -643,7 +619,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -689,7 +665,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
@@ -701,7 +677,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
@@ -734,7 +710,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -747,7 +723,7 @@ func TestHead(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodHead,
+							Method: http.MethodGet,
 							Header: http.Header{},
 						},
 					},
@@ -787,7 +763,7 @@ func TestHead(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.Head(tt.param.ctx(), tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.Get(tt.param.ctx(), tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}

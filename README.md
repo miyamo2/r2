@@ -156,15 +156,16 @@ slog.InfoContext(ctx, "response", slog.String("response", string(buf)))
 
 ### Features
 
-| Feature                                                                 | Description                                                                                                                                                |
-|-------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`Get`](https://github.com/miyamo2/r2?tab=readme-ov-file#get)           | Send HTTP Get requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.            |
-| [`Head`](https://github.com/miyamo2/r2?tab=readme-ov-file#head)         | Send HTTP Head requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.           |
-| [`Post`](https://github.com/miyamo2/r2?tab=readme-ov-file#post)         | Send HTTP Post requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.           |
-| [`Put`](https://github.com/miyamo2/r2?tab=readme-ov-file#put)           | Send HTTP Put requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.            |
-| [`Patch`](https://github.com/miyamo2/r2?tab=readme-ov-file#patch)       | Send HTTP Patch requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.          |
-| [`Delete`](https://github.com/miyamo2/r2?tab=readme-ov-file#delete)     | Send HTTP Delete requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.         |
-| [`PostForm`](https://github.com/miyamo2/r2?tab=readme-ov-file#postform) | Send HTTP Post requests with form until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied. |
+| Feature                                                                 | Description                                                                                                                                                       |
+|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`Get`](https://github.com/miyamo2/r2?tab=readme-ov-file#get)           | Send HTTP Get requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                   |
+| [`Head`](https://github.com/miyamo2/r2?tab=readme-ov-file#head)         | Send HTTP Head requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                  |
+| [`Post`](https://github.com/miyamo2/r2?tab=readme-ov-file#post)         | Send HTTP Post requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                  |
+| [`Put`](https://github.com/miyamo2/r2?tab=readme-ov-file#put)           | Send HTTP Put requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                   |
+| [`Patch`](https://github.com/miyamo2/r2?tab=readme-ov-file#patch)       | Send HTTP Patch requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                 |
+| [`Delete`](https://github.com/miyamo2/r2?tab=readme-ov-file#delete)     | Send HTTP Delete requests until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.                |
+| [`PostForm`](https://github.com/miyamo2/r2?tab=readme-ov-file#postform) | Send HTTP Post requests with form until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied.        |
+| [`Do`](https://github.com/miyamo2/r2?tab=readme-ov-file#do)             | Send HTTP requests with the given method until the [termination condition](https://github.com/miyamo2/r2?tab=readme-ov-file#termination-conditions) is satisfied. |
 
 #### Get
 
@@ -274,6 +275,21 @@ for res, err := range r2.Post(ctx, "https://example.com", form, opts...) {
 }
 ```
 
+#### Do
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+defer cancel()
+opts := []r2.Option{
+	r2.WithMaxRequestAttempts(3),
+	r2.WithPeriod(time.Second),
+	r2.WithContentType(r2.ContentTypeApplicationJson),
+}
+body := bytes.NewBuffer([]byte(`{"foo": "bar"}`))
+for res, err := range r2.Do(ctx, http,MethodPost, "https://example.com", body, opts...) {
+	// do something
+}
+```
 
 #### Termination Conditions
 
@@ -490,7 +506,7 @@ golangci-lint run --fix
 Run Unit Test
 
 ```sh
-cd ./u6t
+cd ./tests/unit
 go test -v -coverpkg=github.com/miyamo2/r2 ./... -coverprofile=coverage.out 
 ```
 
@@ -499,7 +515,7 @@ go test -v -coverpkg=github.com/miyamo2/r2 ./... -coverprofile=coverage.out
 Run Integration Test
 
 ```sh
-cd ./i13t
+cd ./tests/integration
 go test -v -coverpkg=github.com/miyamo2/r2 ./... -coverprofile=coverage.out 
 ```
 

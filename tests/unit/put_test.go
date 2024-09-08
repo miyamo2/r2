@@ -1,4 +1,4 @@
-package u6t
+package unit
 
 import (
 	"bytes"

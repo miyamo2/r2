@@ -1,25 +1,24 @@
-package u6t
+package unit
 
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"github.com/miyamo2/r2"
 	"github.com/miyamo2/r2/internal"
 	"go.uber.org/mock/gomock"
 	"io"
 	"net/http"
-	"strconv"
+	"net/url"
 	"testing"
 	"time"
 )
 
-func TestDelete(t *testing.T) {
+func TestPostForm(t *testing.T) {
 	type param struct {
 		ctx     func() context.Context
 		url     string
-		body    io.Reader
+		form    url.Values
 		options []internal.Option
 	}
 	type want struct {
@@ -36,17 +35,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -58,9 +57,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -82,38 +81,27 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
-					var gotBody map[string]interface{}
-					err := json.NewDecoder(res.Body).Decode(&gotBody)
-					if err != nil {
-						return false
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
+					if xSomething, ok := res.Header["x-something"]; ok {
+						return len(xSomething) == 1 && xSomething[0] == "value"
 					}
-					numStr, ok := gotBody["num"]
-					if !ok {
-						return false
-					}
-					num, err := strconv.Atoi(numStr.(string))
-					if err != nil {
-						return false
-					}
-					return num == 1
+					return false
 				})},
-				body: bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form: url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       http.NoBody,
 						},
 					},
 				},
@@ -121,30 +109,27 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
 						res: &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
+							Header:     http.Header{"x-something": []string{"value"}},
 						},
 					},
 				},
 			},
 			wants: []want{
 				{
-					res: &http.Response{
-						StatusCode: http.StatusOK,
-						Body:       http.NoBody,
-					},
+					res: &ResponseOK,
 				},
 				{
 					res: &http.Response{
 						StatusCode: http.StatusOK,
-						Body:       io.NopCloser(bytes.NewBuffer([]byte(`{"num": "1"}`))),
+						Header:     http.Header{"x-something": []string{"value"}},
 					},
 				},
 			},
@@ -153,17 +138,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{"x-something": []string{"value"}},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}, "x-something": []string{"value"}},
 						},
 					},
 					result: clientResult{
@@ -181,17 +166,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationJSON}},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -209,17 +194,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{},
@@ -228,9 +213,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{},
@@ -239,9 +224,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{},
@@ -264,7 +249,7 @@ func TestDelete(t *testing.T) {
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 		},
 		"context-cancel": {
@@ -274,17 +259,17 @@ func TestDelete(t *testing.T) {
 					return ctx
 				},
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -304,17 +289,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(3)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(3)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -325,9 +310,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -338,9 +323,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -364,17 +349,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -386,9 +371,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -410,17 +395,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -432,9 +417,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -456,17 +441,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -478,9 +463,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -502,17 +487,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -524,9 +509,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -548,17 +533,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -576,17 +561,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -604,17 +589,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -635,16 +620,16 @@ func TestDelete(t *testing.T) {
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
+							Method: http.MethodPost,
 							Body:   http.NoBody,
-							Header: http.Header{},
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -655,9 +640,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
+							Method: http.MethodPost,
 							Body:   http.NoBody,
-							Header: http.Header{},
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -679,16 +664,16 @@ func TestDelete(t *testing.T) {
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -699,9 +684,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -723,16 +708,16 @@ func TestDelete(t *testing.T) {
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
+							Method: http.MethodPost,
 							Body:   &invalidReadCloser{},
-							Header: http.Header{},
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -751,16 +736,16 @@ func TestDelete(t *testing.T) {
 				ctx:     context.Background,
 				url:     "http://example.com",
 				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestAttempts(2)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -778,17 +763,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(0)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -799,9 +784,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -812,9 +797,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -825,9 +810,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -872,8 +857,11 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Header: http.Header{"X-Something": []string{"value"}},
+							Method: http.MethodPost,
+							Header: http.Header{
+								"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded},
+								"X-Something":  []string{"value"},
+							},
 						},
 					},
 					result: clientResult{
@@ -884,8 +872,11 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Header: http.Header{"X-Something": []string{"value"}},
+							Method: http.MethodPost,
+							Header: http.Header{
+								"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded},
+								"X-Something":  []string{"value"},
+							},
 						},
 					},
 					result: clientResult{
@@ -910,17 +901,17 @@ func TestDelete(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithAutoCloseResponseBody(false)},
-				body:    bytes.NewBuffer([]byte(`{"foo": "bar"}`)),
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithAutoCloseResponseBody(false)},
+				form:    url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -932,9 +923,9 @@ func TestDelete(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodDelete,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`{"foo": "bar"}`))),
-							Header: http.Header{},
+							Method: http.MethodPost,
+							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
+							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
 						},
 					},
 					result: clientResult{
@@ -973,7 +964,7 @@ func TestDelete(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.Delete(tt.param.ctx(), tt.param.url, tt.param.body, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.PostForm(tt.param.ctx(), tt.param.url, tt.param.form, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}

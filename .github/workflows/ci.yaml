@@ -67,7 +67,7 @@ jobs:
         if: ${{ matrix.goversion == 'stable' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./u6t/coverage.out
+          files: ./tests/unit/coverage.out
           fail_ci_if_error: false
           verbose: true
           flags: unit
@@ -81,7 +81,7 @@ jobs:
         if: ${{ matrix.goversion == 'stable' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./i13t/coverage.out
+          files: ./tests/integration/coverage.out
           fail_ci_if_error: false
           verbose: true
           flags: integration

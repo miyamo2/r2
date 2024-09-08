@@ -1,9 +1,12 @@
-package i13t
+package integration
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/miyamo2/r2"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -11,12 +14,14 @@ import (
 	"time"
 )
 
-func TestHead(t *testing.T) {
+func TestGet(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -31,38 +36,43 @@ func TestHead(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 		{
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
-				Header: http.Header{},
+				Header: http.Header{
+					"Content-Type": []string{"text/plain; charset=utf-8"},
+				},
+				Body: io.NopCloser(bytes.NewBuffer([]byte("test"))),
 			},
 		},
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL) {
+	for res, err := range r2.Get(ctx, ts.URL) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithContextCancel(t *testing.T) {
+func TestGetWithContextCancel(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -77,10 +87,11 @@ func TestHeadWithContextCancel(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 	}
@@ -88,18 +99,20 @@ func TestHeadWithContextCancel(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithInterval(3*time.Minute)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithInterval(3*time.Minute)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithMaxRequestAttempts(t *testing.T) {
+func TestGetWithMaxRequestAttempts(t *testing.T) {
+	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 2:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -114,33 +127,35 @@ func TestHeadWithMaxRequestAttempts(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 		{
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithMaxRequestAttempts(2)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithPeriod(t *testing.T) {
+func TestGetWithPeriod(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(30 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
@@ -161,18 +176,19 @@ func TestHeadWithPeriod(t *testing.T) {
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithInterval(t *testing.T) {
+func TestGetWithInterval(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -187,10 +203,11 @@ func TestHeadWithInterval(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 		{
@@ -201,18 +218,25 @@ func TestHeadWithInterval(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
 	defer cancel()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithTerminateIf(t *testing.T) {
+func TestGetWithTerminateIf(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-My-Header", fmt.Sprintf("%d", reqTimes))
+		body := TestResponse{
+			Num: reqTimes,
+		}
+
+		w.Header().Set("Content-Type", fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON))
 		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(body); err != nil {
+			t.Fatal(err)
+		}
 		reqTimes++
 	})
 
@@ -224,24 +248,26 @@ func TestHeadWithTerminateIf(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
-					"X-My-Header": []string{"0"},
+					"Content-Type": []string{fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON)},
 				},
+				Body: io.NopCloser(TestResponse{Num: 0}.Encode()),
 			},
 		},
 		{
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
-					"X-My-Header": []string{"1"},
+					"Content-Type": []string{fmt.Sprintf("%s; charset=utf-8", r2.ContentTypeApplicationJSON)},
 				},
+				Body: io.NopCloser(TestResponse{Num: 1}.Encode()),
 			},
 		},
 	}
@@ -249,20 +275,25 @@ func TestHeadWithTerminateIf(t *testing.T) {
 	opts := []r2.Option{
 		r2.WithContentType(r2.ContentTypeApplicationJSON),
 		r2.WithTerminateIf(func(res *http.Response, _ error) bool {
-			xMyHeader := res.Header.Get("X-My-Header")
-			return xMyHeader == "1"
+			body := TestResponse{}
+			err := json.NewDecoder(res.Body).Decode(&body)
+			if err != nil {
+				return false
+			}
+
+			return body.Num == 1
 		}),
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, opts...) {
+	for res, err := range r2.Get(ctx, ts.URL, opts...) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithContentType(t *testing.T) {
+func TestGetWithContentType(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -273,6 +304,7 @@ func TestHeadWithContentType(t *testing.T) {
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -287,33 +319,37 @@ func TestHeadWithContentType(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 		{
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
-				Header: http.Header{},
+				Header: http.Header{
+					"Content-Type": []string{"text/plain; charset=utf-8"},
+				},
+				Body: io.NopCloser(bytes.NewBuffer([]byte("test"))),
 			},
 		},
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithHeader(t *testing.T) {
+func TestGetWithHeader(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -324,6 +360,7 @@ func TestHeadWithHeader(t *testing.T) {
 		switch reqTimes {
 		case 1:
 			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("test"))
 		default:
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -338,40 +375,45 @@ func TestHeadWithHeader(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
+				Body:   io.NopCloser(bytes.NewBuffer([]byte(""))),
 			},
 		},
 		{
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
-				Header: http.Header{},
+				Header: http.Header{
+					"Content-Type": []string{"text/plain; charset=utf-8"},
+				},
+				Body: io.NopCloser(bytes.NewBuffer([]byte("test"))),
 			},
 		},
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestHeadWithAspect(t *testing.T) {
+func TestGetWithAspect(t *testing.T) {
 	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Test") != "test" {
-			w.WriteHeader(http.StatusInternalServerError)
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+		w.Write(b)
 	})
 
 	ts := httptest.NewServer(h)
@@ -382,18 +424,21 @@ func TestHeadWithAspect(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodHead,
+					Method: http.MethodGet,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
-				Header: http.Header{},
+				Header: http.Header{
+					"Content-Type": []string{"text/plain; charset=utf-8"},
+				},
+				Body: io.NopCloser(bytes.NewBuffer([]byte("test0"))),
 			},
 		},
 	}
 
 	ctx := context.Background()
 	i := 0
-	for res, err := range r2.Head(ctx, ts.URL, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
-		req.Header.Set("X-Test", "test")
+	for res, err := range r2.Get(ctx, ts.URL, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+		req.Body = io.NopCloser(bytes.NewBuffer([]byte(fmt.Sprintf("%s%d", "test", i))))
 		return do(req)
 	})) {
 		Cmp(t, Result{res: res, err: err}, expect[i])

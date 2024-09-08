@@ -1,24 +1,20 @@
-package u6t
+package unit
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"github.com/miyamo2/r2"
 	"github.com/miyamo2/r2/internal"
 	"go.uber.org/mock/gomock"
-	"io"
 	"net/http"
-	"net/url"
 	"testing"
 	"time"
 )
 
-func TestPostForm(t *testing.T) {
+func TestHead(t *testing.T) {
 	type param struct {
 		ctx     func() context.Context
 		url     string
-		form    url.Values
 		options []internal.Option
 	}
 	type want struct {
@@ -35,17 +31,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -57,13 +51,13 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
+						err: nil,
 					},
 				},
 			},
@@ -74,6 +68,7 @@ func TestPostForm(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
+					err: nil,
 				},
 			},
 		},
@@ -81,22 +76,20 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx: context.Background,
 				url: "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithTerminateIf(func(res *http.Response, _ error) bool {
 					if xSomething, ok := res.Header["x-something"]; ok {
 						return len(xSomething) == 1 && xSomething[0] == "value"
 					}
 					return false
 				})},
-				form: url.Values{"foo": []string{"bar"}},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -109,9 +102,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -138,17 +130,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithHeader(http.Header{"x-something": []string{"value"}})},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}, "x-something": []string{"value"}},
+							Method: http.MethodHead,
+							Header: http.Header{"x-something": []string{"value"}},
 						},
 					},
 					result: clientResult{
@@ -166,17 +156,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithContentType(r2.ContentTypeApplicationJSON)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3), r2.WithContentType(r2.ContentTypeApplicationJSON)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -194,17 +182,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3), r2.WithPeriod(1 * time.Nanosecond)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{},
@@ -213,9 +199,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{},
@@ -224,9 +209,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{},
@@ -234,12 +218,14 @@ func TestPostForm(t *testing.T) {
 			},
 			wants: []want{
 				{
+					res: nil,
 					err: context.DeadlineExceeded,
 				},
 				{
+					res: nil,
 					err: context.DeadlineExceeded,
-				},
-				{
+				}, {
+					res: nil,
 					err: context.DeadlineExceeded,
 				},
 			},
@@ -248,8 +234,7 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestReturningError), r2.WithMaxRequestAttempts(1)},
 			},
 		},
 		"context-cancel": {
@@ -259,17 +244,15 @@ func TestPostForm(t *testing.T) {
 					return ctx
 				},
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2), r2.WithInterval(3 * time.Minute)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -283,26 +266,29 @@ func TestPostForm(t *testing.T) {
 					res: &ResponseInternalServerError,
 					err: ErrTest,
 				},
+				{
+					res: nil,
+					err: context.DeadlineExceeded,
+				},
 			},
 		},
 		"nil-response": {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(3)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(3)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
+						res: nil,
 						err: ErrTest,
 					},
 				},
@@ -310,12 +296,12 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
+						res: nil,
 						err: ErrTest,
 					},
 				},
@@ -323,24 +309,27 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
+						res: nil,
 						err: ErrTest,
 					},
 				},
 			},
 			wants: []want{
 				{
+					res: nil,
 					err: ErrTest,
 				},
 				{
+					res: nil,
 					err: ErrTest,
 				},
 				{
+					res: nil,
 					err: ErrTest,
 				},
 			},
@@ -349,17 +338,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -371,13 +358,13 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
+						err: nil,
 					},
 				},
 			},
@@ -388,6 +375,7 @@ func TestPostForm(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
+					err: nil,
 				},
 			},
 		},
@@ -395,17 +383,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -417,13 +403,13 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
+						err: nil,
 					},
 				},
 			},
@@ -434,6 +420,7 @@ func TestPostForm(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
+					err: nil,
 				},
 			},
 		},
@@ -441,17 +428,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -463,13 +448,13 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
+						err: nil,
 					},
 				},
 			},
@@ -480,6 +465,7 @@ func TestPostForm(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
+					err: nil,
 				},
 			},
 		},
@@ -487,17 +473,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -509,13 +493,13 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &ResponseOK,
+						err: nil,
 					},
 				},
 			},
@@ -526,6 +510,7 @@ func TestPostForm(t *testing.T) {
 				},
 				{
 					res: &ResponseOK,
+					err: nil,
 				},
 			},
 		},
@@ -533,55 +518,27 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
 						res: &Response399,
+						err: nil,
 					},
 				},
 			},
 			wants: []want{
 				{
 					res: &Response399,
-				},
-			},
-		},
-		"client-returns-bad-request": {
-			param: param{
-				ctx:     context.Background,
-				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
-			},
-			clientParamResultPairs: []clientParamResultPair{
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						res: &ResponseBadRequest,
-					},
-				},
-			},
-			wants: []want{
-				{
-					res: &ResponseBadRequest,
+					err: nil,
 				},
 			},
 		},
@@ -589,17 +546,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -615,147 +570,29 @@ func TestPostForm(t *testing.T) {
 				},
 			},
 		},
-		"with-nobody": {
+		"client-returns-bad-request": {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNoBody), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithMaxRequestAttempts(2)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   http.NoBody,
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
-						err: ErrTest,
-					},
-				},
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   http.NoBody,
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						res: &ResponseOK,
+						res: &ResponseBadRequest,
 					},
 				},
 			},
 			wants: []want{
 				{
-					err: ErrTest,
-				},
-				{
-					res: &ResponseOK,
-				},
-			},
-		},
-		"with-valid-body-without-get-body": {
-			param: param{
-				ctx:     context.Background,
-				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithValidBodyWithoutGetBody), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
-			},
-			clientParamResultPairs: []clientParamResultPair{
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						err: ErrTest,
-					},
-				},
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						res: &ResponseOK,
-					},
-				},
-			},
-			wants: []want{
-				{
-					err: ErrTest,
-				},
-				{
-					res: &ResponseOK,
-				},
-			},
-		},
-		"with-invalid-body": {
-			param: param{
-				ctx:     context.Background,
-				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidBody), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
-			},
-			clientParamResultPairs: []clientParamResultPair{
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   &invalidReadCloser{},
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						err: ErrTest,
-					},
-				},
-			},
-			wants: []want{
-				{
-					err: ErrTest,
-				},
-			},
-		},
-		"with-invalid-get-body": {
-			param: param{
-				ctx:     context.Background,
-				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithInvalidGetBody), r2.WithMaxRequestAttempts(2)},
-				form:    url.Values{"foo": []string{"bar"}},
-			},
-			clientParamResultPairs: []clientParamResultPair{
-				{
-					param: clientParam{
-						req: &http.Request{
-							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
-						},
-					},
-					result: clientResult{
-						err: ErrTest,
-					},
-				},
-			},
-			wants: []want{
-				{
-					err: ErrTest,
+					res: &ResponseBadRequest,
 				},
 			},
 		},
@@ -763,17 +600,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithMaxRequestAttempts(0)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequest), r2.WithMaxRequestAttempts(0)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -784,9 +619,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -797,9 +631,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -810,9 +643,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -857,11 +689,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Header: http.Header{
-								"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded},
-								"X-Something":  []string{"value"},
-							},
+							Method: http.MethodHead,
+							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
 					result: clientResult{
@@ -872,11 +701,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Header: http.Header{
-								"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded},
-								"X-Something":  []string{"value"},
-							},
+							Method: http.MethodHead,
+							Header: http.Header{"X-Something": []string{"value"}},
 						},
 					},
 					result: clientResult{
@@ -901,17 +727,15 @@ func TestPostForm(t *testing.T) {
 			param: param{
 				ctx:     context.Background,
 				url:     "http://example.com",
-				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithForm), r2.WithAutoCloseResponseBody(false)},
-				form:    url.Values{"foo": []string{"bar"}},
+				options: []internal.Option{internal.WithNewRequest(stubNewRequestWithNilBody), r2.WithAutoCloseResponseBody(false)},
 			},
 			clientParamResultPairs: []clientParamResultPair{
 				{
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -923,9 +747,8 @@ func TestPostForm(t *testing.T) {
 					param: clientParam{
 						req: &http.Request{
 							URL:    HelperMustURLParse("http://example.com"),
-							Method: http.MethodPost,
-							Body:   io.NopCloser(bytes.NewBuffer([]byte(`foo=bar`))),
-							Header: http.Header{"Content-Type": []string{r2.ContentTypeApplicationFormURLEncoded}},
+							Method: http.MethodHead,
+							Header: http.Header{},
 						},
 					},
 					result: clientResult{
@@ -964,7 +787,7 @@ func TestPostForm(t *testing.T) {
 			gomock.InOrder(calls...)
 
 			i := 0
-			for res, err := range r2.PostForm(tt.param.ctx(), tt.param.url, tt.param.form, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
+			for res, err := range r2.Head(tt.param.ctx(), tt.param.url, append(tt.param.options, r2.WithHttpClient(mockHttpClient))...) {
 				if len(tt.wants)-1 < i {
 					t.Errorf("unexpected request times. expect: %d, but: %d or more", len(tt.wants), i)
 				}

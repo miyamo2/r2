@@ -1,4 +1,4 @@
-package i13t
+package integration
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func TestPost(t *testing.T) {
+func TestDelete(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func TestPost(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -52,7 +52,7 @@ func TestPost(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -66,13 +66,13 @@ func TestPost(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body) {
+	for res, err := range r2.Delete(ctx, ts.URL, body) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithContextCancel(t *testing.T) {
+func TestDeleteWithContextCancel(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -99,7 +99,7 @@ func TestPostWithContextCancel(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -111,13 +111,13 @@ func TestPostWithContextCancel(t *testing.T) {
 	defer cancel()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithInterval(3*time.Minute)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithInterval(3*time.Minute)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithMaxRequestAttempts(t *testing.T) {
+func TestDeleteWithMaxRequestAttempts(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +145,7 @@ func TestPostWithMaxRequestAttempts(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -155,7 +155,7 @@ func TestPostWithMaxRequestAttempts(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -166,13 +166,13 @@ func TestPostWithMaxRequestAttempts(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithMaxRequestAttempts(2)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithPeriod(t *testing.T) {
+func TestDeleteWithPeriod(t *testing.T) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(30 * time.Millisecond)
 		testReq := RequestFromBuffer(r.Body)
@@ -200,13 +200,13 @@ func TestPostWithPeriod(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithPeriod(10*time.Millisecond), r2.WithMaxRequestAttempts(2)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithInterval(t *testing.T) {
+func TestDeleteWithInterval(t *testing.T) {
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch reqTimes {
@@ -233,7 +233,7 @@ func TestPostWithInterval(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -248,13 +248,13 @@ func TestPostWithInterval(t *testing.T) {
 	defer cancel()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithInterval(time.Minute), r2.WithMaxRequestAttempts(3)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithTerminateIf(t *testing.T) {
+func TestDeleteWithTerminateIf(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -278,7 +278,7 @@ func TestPostWithTerminateIf(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -291,7 +291,7 @@ func TestPostWithTerminateIf(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -318,13 +318,13 @@ func TestPostWithTerminateIf(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, opts...) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, opts...) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithContentType(t *testing.T) {
+func TestDeleteWithContentType(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -356,7 +356,7 @@ func TestPostWithContentType(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -367,7 +367,7 @@ func TestPostWithContentType(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -381,13 +381,13 @@ func TestPostWithContentType(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithContentType(r2.ContentTypeApplicationJSON)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithHeader(t *testing.T) {
+func TestDeleteWithHeader(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -419,7 +419,7 @@ func TestPostWithHeader(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -429,7 +429,7 @@ func TestPostWithHeader(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -443,13 +443,13 @@ func TestPostWithHeader(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithHeader(http.Header{"X-Test": []string{"test"}})) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		i++
 	}
 }
 
-func TestPostWithAspect(t *testing.T) {
+func TestDeleteWithAspect(t *testing.T) {
 	t.Parallel()
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		testReq := RequestFromBuffer(r.Body)
@@ -470,7 +470,7 @@ func TestPostWithAspect(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -484,7 +484,7 @@ func TestPostWithAspect(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithAspect(func(req *http.Request, do func(req *http.Request) (*http.Response, error)) (*http.Response, error) {
 		testReq := RequestFromBuffer(req.Body)
 		testReq.Num += 1
 		req.Body = io.NopCloser(testReq.Encode())
@@ -495,7 +495,7 @@ func TestPostWithAspect(t *testing.T) {
 	}
 }
 
-func TestPostWithAutoCloseResponseBody(t *testing.T) {
+func TestDeleteWithAutoCloseResponseBody(t *testing.T) {
 	t.Parallel()
 	reqTimes := 0
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -523,7 +523,7 @@ func TestPostWithAutoCloseResponseBody(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{},
@@ -533,7 +533,7 @@ func TestPostWithAutoCloseResponseBody(t *testing.T) {
 			res: &http.Response{
 				StatusCode: http.StatusOK,
 				Request: &http.Request{
-					Method: http.MethodPost,
+					Method: http.MethodDelete,
 					URL:    &url.URL{Scheme: "http", Host: ts.Listener.Addr().String()},
 				},
 				Header: http.Header{
@@ -547,7 +547,7 @@ func TestPostWithAutoCloseResponseBody(t *testing.T) {
 	ctx := context.Background()
 	i := 0
 	body := TestRequest{Num: 0}.Encode()
-	for res, err := range r2.Post(ctx, ts.URL, body, r2.WithAutoCloseResponseBody(false)) {
+	for res, err := range r2.Delete(ctx, ts.URL, body, r2.WithAutoCloseResponseBody(false)) {
 		Cmp(t, Result{res: res, err: err}, expect[i])
 		if resBody := res.Body; resBody != nil {
 			if err := res.Body.Close(); err != nil {
