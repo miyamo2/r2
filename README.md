@@ -459,7 +459,9 @@ However, you must promise to follow our [Code of Conduct](https://github.com/miy
 ├ .github/
 │    └ workflows/  # GitHub Actions Workflow
 ├ internal/        # Internal Package; Shared with sub-packages.
-└ u6t/             # Unit Test
+└ tests/            
+    ├ integration/ # Integration Test
+    └ unit/        # Unit Test
 ```
 
 ### Tasks
